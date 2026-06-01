@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarvelVault – MCU & X-Men Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #e50914;
+  --red-dark: #b20710;
+  --gold: #f5c518;
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --text: #e8e8f0;
+  --text-muted: #8888a0;
+  --text-dim: #555568;
+  --radius: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 3px;
+  color: var(--red);
+  text-shadow: 0 0 20px rgba(229,9,20,0.4);
+}
+
+.nav-links {
+  display: flex; gap: 24px; list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-muted); text-decoration: none;
+  font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+.nav-search {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.search-input {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  color: var(--text);
+  font-size: 13px;
+  width: 220px;
+  outline: none;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.search-input::placeholder { color: var(--text-dim); }
+.search-input:focus {
+  border-color: rgba(229,9,20,0.4);
+  background: rgba(255,255,255,0.07);
+  box-shadow: 0 0 0 3px rgba(229,9,20,0.08);
+}
+
+/* ─── HERO ─── */
+.hero {
+  position: relative; height: 85vh; min-height: 500px;
+  display: flex; align-items: flex-end;
+  padding: 0 0 80px 60px;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background: 
+    radial-gradient(ellipse at 60% 40%, rgba(229,9,20,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(100,50,200,0.05) 0%, transparent 50%),
+    linear-gradient(135deg, #0d0d18 0%, #12121f 100%);
+}
+
+.hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.95) 30%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.1) 100%),
+              linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 50%);
+}
+
+.hero-poster-bg {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 55%;
+  overflow: hidden;
+}
+.hero-poster-bg img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.25;
+  filter: blur(2px);
+}
+
+.hero-content { position: relative; z-index: 1; max-width: 560px; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--red); color: white;
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  padding: 4px 12px; border-radius: 4px;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 6vw, 78px);
+  line-height: 0.95;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.8);
+}
+
+.hero-meta {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.hero-meta span {
+  font-size: 13px; color: var(--text-muted);
+}
+
+.hero-rating {
+  display: flex; align-items: center; gap: 5px;
+  color: var(--gold) !important; font-weight: 600;
+}
+
+.hero-rating svg { width: 14px; height: 14px; fill: var(--gold); }
+
+.hero-desc {
+  font-size: 14px; line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  max-width: 440px;
+}
+
+.hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.btn-primary {
+  background: var(--red);
+  color: white; border: none;
+  padding: 12px 28px; border-radius: 6px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--glass);
+  color: var(--text); border: 1px solid var(--glass-border);
+  padding: 12px 24px; border-radius: 6px;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; backdrop-filter: blur(8px);
+  transition: all 0.2s; font-family: inherit;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+/* ─── MAIN CONTENT ─── */
+main { padding-top: 0; }
+
+/* ─── SECTIONS ─── */
+.section {
+  padding: 32px 0 8px;
+}
+
+.section-header {
+  display: flex; align-items: center;
+  padding: 0 24px; margin-bottom: 16px;
+  gap: 12px;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.section-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 12px;
+  background: rgba(229,9,20,0.15);
+  color: var(--red); letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.section-count {
+  font-size: 12px; color: var(--text-dim);
+  margin-left: auto;
+}
+
+/* ─── SCROLL ROW ─── */
+.scroll-row {
+  display: flex; gap: 12px;
+  overflow-x: auto; padding: 8px 24px 20px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+
+/* ─── POSTER CARD ─── */
+.card {
+  flex-shrink: 0;
+  width: 150px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.3s cubic-bezier(.2,.8,.2,1);
+}
+
+.card:hover { transform: translateY(-6px) scale(1.03); }
+
+.card-poster {
+  width: 100%; aspect-ratio: 2/3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  background: var(--bg3);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--glass-border);
+}
+
+.card-poster img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+  transition: transform 0.4s;
+}
+.card:hover .card-poster img { transform: scale(1.06); }
+
+.card-poster-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+  opacity: 0; transition: opacity 0.3s;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 12px;
+}
+.card:hover .card-poster-overlay { opacity: 1; }
+
+.card-play-btn {
+  background: var(--red);
+  color: white; border: none;
+  border-radius: 50%;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px;
+  box-shadow: 0 4px 16px rgba(229,9,20,0.5);
+}
+
+.card-type-tag {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  color: var(--text-muted); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-info {
+  padding: 8px 2px 0;
+}
+
+.card-title {
+  font-size: 12px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.card-year {
+  font-size: 11px; color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ─── SEARCH PAGE ─── */
+#search-page {
+  display: none;
+  padding: 80px 24px 100px;
+  min-height: 100vh;
+}
+
+.search-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+/* ─── PHASES PAGE ─── */
+#phases-page, #xmen-page {
+  display: none;
+  padding: 80px 24px 100px;
+  min-height: 100vh;
+}
+
+.phases-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px; letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.phases-sub {
+  color: var(--text-muted); font-size: 14px;
+  margin-bottom: 40px;
+}
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+.modal-overlay.active { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  width: 100%; max-width: 680px;
+  max-height: 92vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  animation: slideUp 0.3s cubic-bezier(.2,.8,.2,1);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+}
+.modal::-webkit-scrollbar { display: none; }
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-backdrop {
+  width: 100%;
+  aspect-ratio: 16/7;
+  overflow: hidden;
+  position: relative;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg3);
+}
+
+.modal-backdrop img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.5;
+}
+
+.modal-backdrop-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 30%, var(--bg2) 100%);
+}
+
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(0,0,0,0.7); border: 1px solid var(--glass-border);
+  color: white; width: 36px; height: 36px;
+  border-radius: 50%; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10; transition: all 0.2s;
+}
+.modal-close:hover { background: var(--red); }
+
+.modal-body {
+  padding: 0 24px 28px;
+  margin-top: -40px;
+  position: relative;
+}
+
+.modal-top {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+
+.modal-poster {
+  flex-shrink: 0;
+  width: 110px; aspect-ratio: 2/3;
+  border-radius: 8px; overflow: hidden;
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  background: var(--bg3);
+}
+.modal-poster img { width: 100%; height: 100%; object-fit: cover; }
+
+.modal-info { flex: 1; padding-top: 16px; }
+
+.modal-type-tag {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--red);
+  margin-bottom: 6px;
+}
+
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 1px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.modal-meta {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 10px;
+}
+
+.modal-tag {
+  font-size: 11px; color: var(--text-muted);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  padding: 3px 10px; border-radius: 12px;
+}
+
+.modal-rating {
+  display: flex; align-items: center; gap: 5px;
+  color: var(--gold); font-weight: 600; font-size: 13px;
+}
+.modal-rating svg { width: 13px; height: 13px; fill: var(--gold); }
+
+.modal-plot {
+  font-size: 13px; line-height: 1.65;
+  color: var(--text-muted);
+  margin: 16px 0;
+}
+
+.modal-details-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin: 16px 0;
+}
+
+.modal-detail-item label {
+  display: block; font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 3px;
+}
+.modal-detail-item span {
+  font-size: 13px; color: var(--text);
+}
+
+.download-section { margin-top: 20px; }
+
+.download-title {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.download-grid {
+  display: grid; gap: 8px;
+}
+
+.download-card {
+  background: var(--bg3);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+}
+
+.download-card-info {}
+
+.download-quality {
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+}
+
+.download-audio {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tg-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #0088cc;
+  color: white; border: none;
+  padding: 8px 14px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  white-space: nowrap; flex-shrink: 0;
+  font-family: inherit; transition: all 0.2s;
+}
+.tg-btn:hover { background: #0077b3; transform: translateY(-1px); }
+.tg-btn svg { width: 14px; height: 14px; fill: white; }
+
+.tg-btn-large {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #0088cc;
+  color: white; border: none;
+  padding: 14px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  font-family: inherit; transition: all 0.2s;
+  width: 100%;
+}
+.tg-btn-large:hover { background: #0077b3; }
+.tg-btn-large svg { width: 18px; height: 18px; fill: white; }
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
+  background: rgba(10,10,15,0.96);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--glass-border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+}
+
+.bottom-nav-inner {
+  display: flex; justify-content: space-around;
+}
+
+.bn-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 4px 16px;
+  cursor: pointer; border: none; background: none;
+  color: var(--text-dim); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.3px; font-family: inherit;
+  transition: color 0.2s;
+}
+.bn-item.active { color: var(--red); }
+.bn-item svg { width: 22px; height: 22px; }
+
+/* ─── SKELETON ─── */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ─── DIVIDER ─── */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+  margin: 8px 24px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .search-input { width: 160px; }
+  .hero { padding: 0 0 100px 20px; }
+  .hero-title { font-size: clamp(32px, 10vw, 54px); }
+  .hero-poster-bg { width: 100%; opacity: 0.15; }
+  .section-header { padding: 0 16px; }
+  .scroll-row { padding: 8px 16px 20px; }
+  .card { width: 120px; }
+  .bottom-nav { display: block; }
+  main { padding-bottom: 80px; }
+  .modal-backdrop { aspect-ratio: 16/9; }
+  .modal-top { flex-direction: column; align-items: center; }
+  .modal-poster { width: 100px; }
+  .modal-details-grid { grid-template-columns: 1fr; }
+  #search-page { padding: 80px 16px 100px; }
+  #phases-page, #xmen-page { padding: 80px 16px 100px; }
+}
+
+@media (min-width: 769px) {
+  .nav-links { display: flex; }
+  .card { width: 155px; }
+}
+
+@media (min-width: 1024px) {
+  .card { width: 170px; }
+  .scroll-row { padding: 8px 60px 20px; }
+  .section-header { padding: 0 60px; }
+  nav { padding: 0 60px; }
+  .hero { padding: 0 0 100px 60px; }
+}
+
+/* ─── FADE IN ─── */
+.fade-in {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── PAGE ─── */
+.page { display: none; }
+.page.active { display: block; }
+#home-page.active { display: block; }
+
+/* ─── PHASE DIVIDER ─── */
+.phase-divider {
+  display: flex; align-items: center; gap: 14px;
+  padding: 28px 24px 4px;
+}
+.phase-divider-line { flex: 1; height: 1px; background: var(--glass-border); }
+.phase-divider-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 2px;
+  color: var(--red);
+}
+
+@media (min-width: 1024px) {
+  .phase-divider { padding: 28px 60px 4px; }
+}
+
+/* no-results */
+.no-results {
+  text-align: center; padding: 60px 24px;
+  color: var(--text-muted);
+}
+.no-results h3 { font-size: 20px; margin-bottom: 8px; }
+
+/* Genres display */
+.genres-list {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 10px 0;
+}
+.genre-tag {
+  font-size: 11px;
+  background: rgba(229,9,20,0.1);
+  color: var(--red); border: 1px solid rgba(229,9,20,0.2);
+  padding: 3px 10px; border-radius: 12px;
+}
+
+/* Episodes accordion */
+.episodes-section { margin-top: 14px; }
+.episodes-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;
+}
+.ep-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: var(--bg3);
+  border: 1px solid var(--glass-border); border-radius: 7px;
+  margin-bottom: 7px; gap: 12px;
+}
+.ep-label { font-size: 13px; color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">MARVEL<span style="color:var(--text-muted);font-size:14px;letter-spacing:1px;margin-left:6px;font-family:'DM Sans',sans-serif;font-weight:300">VAULT</span></div>
+  <ul class="nav-links">
+    <li><a href="#" class="active" onclick="showPage('home')">Home</a></li>
+    <li><a href="#" onclick="showPage('phases')">MCU Phases</a></li>
+    <li><a href="#" onclick="showPage('xmen')">X-Men</a></li>
+  </ul>
+  <div class="nav-search">
+    <input class="search-input" type="text" placeholder="Search titles…" id="search-input" oninput="handleSearch(this.value)">
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="home-page" class="page active">
+
+  <!-- HERO -->
+  <div class="hero" id="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-poster-bg">
+      <img src="posters/avengers-endgame.png" onerror="this.src='posters/placeholder.png'" alt="">
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:10px;height:10px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        FEATURED
+      </div>
+      <div class="hero-title">Avengers:<br>Endgame</div>
+      <div class="hero-meta">
+        <span>2019</span>
+        <span>•</span>
+        <span>3h 2m</span>
+        <span>•</span>
+        <span class="hero-rating">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          8.4
+        </span>
+        <span>•</span>
+        <span>Phase 3</span>
+      </div>
+      <p class="hero-desc">After the devastating events of Infinity War, the Avengers assemble once more to reverse Thanos' actions and restore balance to the universe in an epic final confrontation.</p>
+      <div class="hero-buttons">
+        <button class="btn-primary" onclick="openModal('avengers-endgame')">▶ More Details</button>
+        <button class="btn-secondary">+ Watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT ROWS -->
+  <main id="home-content"></main>
+</div>
+
+<!-- SEARCH PAGE -->
+<div id="search-page" class="page">
+  <div class="search-title" id="search-heading">Search Results</div>
+  <div class="search-grid" id="search-results"></div>
+  <div class="no-results" id="search-empty" style="display:none">
+    <h3>No results found</h3>
+    <p>Try a different title or browse the categories</p>
+  </div>
+</div>
+
+<!-- MCU PHASES PAGE -->
+<div id="phases-page" class="page">
+  <div class="phases-title">MCU Phases</div>
+  <p class="phases-sub">The complete Marvel Cinematic Universe timeline</p>
+  <div id="phases-content"></div>
+</div>
+
+<!-- X-MEN PAGE -->
+<div id="xmen-page" class="page">
+  <div class="phases-title">X-Men Collection</div>
+  <p class="phases-sub">The complete X-Men film franchise</p>
+  <div id="xmen-grid" class="search-grid" style="padding:0 0 20px"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-backdrop" id="modal-backdrop">
+      <img id="modal-bg-img" src="" alt="">
+      <div class="modal-backdrop-overlay"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-top">
+        <div class="modal-poster">
+          <img id="modal-poster-img" src="" alt="">
+        </div>
+        <div class="modal-info">
+          <div class="modal-type-tag" id="modal-type"></div>
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-meta" id="modal-meta"></div>
+          <div class="genres-list" id="modal-genres"></div>
+        </div>
+      </div>
+      <p class="modal-plot" id="modal-plot"></p>
+      <div class="modal-details-grid" id="modal-details"></div>
+      <div class="download-section" id="modal-downloads"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bn-item active" onclick="showPage('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="bn-item" onclick="showPage('phases')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      Phases
+    </button>
+    <button class="bn-item" onclick="showPage('search-nav')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search
+    </button>
+    <button class="bn-item" onclick="showPage('xmen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      X-Men
+    </button>
+  </div>
+</nav>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────
+function convertTgLink(url) {
+  if (!url) return url;
+  if (!url.startsWith('https://')) url = 'https://' + url;
+  return url.replace('https://t.me/', 'https://telegram.me/');
+}
+
+function slugify(title) {
+  return title.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+function posterPath(title) {
+  const slug = title.toLowerCase()
+    .replace(/\.\.\./g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+  return `posters/${slug}.png`;
+}
+
+const MCU_META = {
+  "Iron Man (2008)": { plot: "Billionaire inventor Tony Stark builds a powered armored suit and becomes the Iron Man to fight against evil.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 6m", rating: "7.9", cast: "Robert Downey Jr., Gwyneth Paltrow, Jeff Bridges", director: "Jon Favreau", phase: "Phase 1", year: "2008", type: "Movie" },
+  "The Incredible Hulk (2008)": { plot: "Bruce Banner, a scientist on the run from the U.S. Government, must find a cure for the monster he turns into whenever he loses his temper.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 52m", rating: "6.7", cast: "Edward Norton, Liv Tyler, Tim Roth", director: "Louis Leterrier", phase: "Phase 1", year: "2008", type: "Movie" },
+  "Iron Man 2 (2010)": { plot: "With the world now aware of his identity as Iron Man, Tony Stark must contend with both his declining health and a vengeful mad scientist.", genres: ["Action","Adventure"], runtime: "2h 4m", rating: "6.9", cast: "Robert Downey Jr., Gwyneth Paltrow, Don Cheadle", director: "Jon Favreau", phase: "Phase 1", year: "2010", type: "Movie" },
+  "Thor (2011)": { plot: "The powerful but arrogant god Thor is cast out of Asgard to live amongst humans in Midgard (Earth), where he soon becomes one of their finest defenders.", genres: ["Action","Adventure","Fantasy"], runtime: "1h 55m", rating: "7.0", cast: "Chris Hemsworth, Natalie Portman, Tom Hiddleston", director: "Kenneth Branagh", phase: "Phase 1", year: "2011", type: "Movie" },
+  "Captain America: The First Avenger (2011)": { plot: "Steve Rogers, a rejected military soldier, transforms into Captain America after taking a dose of a Super-Soldier serum.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 4m", rating: "6.9", cast: "Chris Evans, Hugo Weaving, Hayley Atwell", director: "Joe Johnston", phase: "Phase 1", year: "2011", type: "Movie" },
+  "The Avengers (2012)": { plot: "Earth's mightiest heroes must come together and learn to fight as a team to stop the mischievous Loki and his alien army from enslaving humanity.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 23m", rating: "8.0", cast: "Robert Downey Jr., Chris Evans, Scarlett Johansson", director: "Joss Whedon", phase: "Phase 1", year: "2012", type: "Movie" },
+  "Iron Man 3 (2013)": { plot: "When Tony Stark's world is torn apart by a formidable terrorist called the Mandarin, he starts an odyssey of rebuilding and retribution.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 10m", rating: "7.1", cast: "Robert Downey Jr., Gwyneth Paltrow, Guy Pearce", director: "Shane Black", phase: "Phase 2", year: "2013", type: "Movie" },
+  "Thor: The Dark World (2013)": { plot: "When the Dark Elves attempt to plunge the universe into darkness, Thor must embark on a perilous and personal journey.", genres: ["Action","Adventure","Fantasy"], runtime: "1h 52m", rating: "6.8", cast: "Chris Hemsworth, Natalie Portman, Tom Hiddleston", director: "Alan Taylor", phase: "Phase 2", year: "2013", type: "Movie" },
+  "Captain America: The Winter Soldier (2014)": { plot: "Steve Rogers struggles to embrace his role in the modern world and battles a new threat from old history: the Soviet agent known as the Winter Soldier.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 16m", rating: "7.7", cast: "Chris Evans, Scarlett Johansson, Samuel L. Jackson", director: "Russo Brothers", phase: "Phase 2", year: "2014", type: "Movie" },
+  "Guardians of the Galaxy (2014)": { plot: "A group of intergalactic criminals must pull together to stop a fanatical warrior with plans to purge the universe.", genres: ["Action","Adventure","Comedy"], runtime: "2h 1m", rating: "8.0", cast: "Chris Pratt, Vin Diesel, Bradley Cooper", director: "James Gunn", phase: "Phase 2", year: "2014", type: "Movie" },
+  "Avengers: Age of Ultron (2015)": { plot: "When Tony Stark tries to jumpstart a dormant peacekeeping program, things go awry and Earth's mightiest heroes are put to the ultimate test.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 21m", rating: "7.3", cast: "Robert Downey Jr., Chris Evans, Mark Ruffalo", director: "Joss Whedon", phase: "Phase 2", year: "2015", type: "Movie" },
+  "Ant-Man (2015)": { plot: "Armed with a super-suit with the astonishing ability to shrink in scale but increase in strength, cat burglar Scott Lang must help his mentor protect the secret.", genres: ["Action","Adventure","Comedy"], runtime: "1h 57m", rating: "7.3", cast: "Paul Rudd, Michael Douglas, Evangeline Lilly", director: "Peyton Reed", phase: "Phase 2", year: "2015", type: "Movie" },
+  "Captain America: Civil War (2016)": { plot: "Political pressure mounts to install a governing body to oversee and account for the actions of the Avengers, but not everyone is in agreement.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 27m", rating: "7.8", cast: "Chris Evans, Robert Downey Jr., Scarlett Johansson", director: "Russo Brothers", phase: "Phase 3", year: "2016", type: "Movie" },
+  "Doctor Strange (2016)": { plot: "While on a journey of physical and spiritual healing, a brilliant neurosurgeon is drawn into the world of the mystic arts.", genres: ["Action","Adventure","Fantasy"], runtime: "1h 55m", rating: "7.5", cast: "Benedict Cumberbatch, Chiwetel Ejiofor, Rachel McAdams", director: "Scott Derrickson", phase: "Phase 3", year: "2016", type: "Movie" },
+  "Guardians of the Galaxy 2 (2017)": { plot: "The Guardians struggle to keep together as a team while dealing with their personal family issues, notably Star-Lord's encounter with his father the ambitious Ego.", genres: ["Action","Adventure","Comedy"], runtime: "2h 16m", rating: "7.6", cast: "Chris Pratt, Zoe Saldana, Dave Bautista", director: "James Gunn", phase: "Phase 3", year: "2017", type: "Movie" },
+  "Spider-Man: Homecoming (2017)": { plot: "Peter Parker balances his life as an ordinary high school student in Queens with his superhero alter-ego Spider-Man.", genres: ["Action","Adventure","Comedy"], runtime: "2h 13m", rating: "7.4", cast: "Tom Holland, Michael Keaton, Robert Downey Jr.", director: "Jon Watts", phase: "Phase 3", year: "2017", type: "Movie" },
+  "Thor: Ragnarok (2017)": { plot: "Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnarök, the destruction of his world.", genres: ["Action","Adventure","Comedy"], runtime: "2h 10m", rating: "7.9", cast: "Chris Hemsworth, Tom Hiddleston, Cate Blanchett", director: "Taika Waititi", phase: "Phase 3", year: "2017", type: "Movie" },
+  "Black Panther (2018)": { plot: "T'Challa, the King of Wakanda, rises to the throne in the isolated, technologically advanced African nation, but his claim is challenged by a vengeful outsider.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 14m", rating: "7.3", cast: "Chadwick Boseman, Michael B. Jordan, Lupita Nyong'o", director: "Ryan Coogler", phase: "Phase 3", year: "2018", type: "Movie" },
+  "Avengers: Infinity War (2018)": { plot: "The Avengers and their allies must be willing to sacrifice all in an attempt to defeat the powerful Thanos before his blitz of devastation and ruin puts an end to the universe.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 29m", rating: "8.4", cast: "Robert Downey Jr., Chris Evans, Josh Brolin", director: "Russo Brothers", phase: "Phase 3", year: "2018", type: "Movie" },
+  "Ant-Man and the Wasp (2018)": { plot: "As Scott Lang balances being both a Super Hero and a father, Hope van Dyne and Dr. Hank Pym present an urgent new mission.", genres: ["Action","Adventure","Comedy"], runtime: "1h 58m", rating: "7.0", cast: "Paul Rudd, Evangeline Lilly, Michael Douglas", director: "Peyton Reed", phase: "Phase 3", year: "2018", type: "Movie" },
+  "Captain Marvel (2019)": { plot: "Carol Danvers becomes one of the universe's most powerful heroes when Earth is caught in the middle of a galactic war between two alien races.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 4m", rating: "6.8", cast: "Brie Larson, Samuel L. Jackson, Ben Mendelsohn", director: "Anna Boden & Ryan Fleck", phase: "Phase 3", year: "2019", type: "Movie" },
+  "Avengers: Endgame (2019)": { plot: "After the devastating events of Infinity War, the Avengers assemble once more to reverse Thanos' actions and restore balance to the universe.", genres: ["Action","Adventure","Drama"], runtime: "3h 2m", rating: "8.4", cast: "Robert Downey Jr., Chris Evans, Mark Ruffalo, Josh Brolin", director: "Russo Brothers", phase: "Phase 3", year: "2019", type: "Movie" },
+  "Spider-Man: Far From Home (2019)": { plot: "Following the events of Avengers: Endgame, Spider-Man must step up to take on new threats in a world that has changed forever.", genres: ["Action","Adventure","Comedy"], runtime: "2h 9m", rating: "7.4", cast: "Tom Holland, Samuel L. Jackson, Jake Gyllenhaal", director: "Jon Watts", phase: "Phase 3", year: "2019", type: "Movie" },
+  "WandaVision (2021)": { plot: "Wanda Maximoff and Vision — two super-powered beings living idealized suburban lives — begin to suspect that everything is not as it seems.", genres: ["Fantasy","Mystery","Drama"], runtime: "9 Episodes", rating: "7.9", cast: "Elizabeth Olsen, Paul Bettany, Kathryn Hahn", director: "Matt Shakman", phase: "Phase 4", year: "2021", type: "Series" },
+  "Falcon and the Winter Soldier (2021)": { plot: "Sam Wilson and Bucky Barnes team up in a global adventure that tests their abilities and their patience as they honor the legacy of Steve Rogers.", genres: ["Action","Adventure","Drama"], runtime: "6 Episodes", rating: "7.2", cast: "Anthony Mackie, Sebastian Stan, Daniel Brühl", director: "Kari Skogland", phase: "Phase 4", year: "2021", type: "Series" },
+  "Loki season 1 (2021)": { plot: "The mercurial villain Loki resumes his role as the God of Mischief in a new series that takes place after the events of Avengers: Endgame.", genres: ["Action","Adventure","Fantasy"], runtime: "6 Episodes", rating: "8.2", cast: "Tom Hiddleston, Sophia Di Martino, Owen Wilson", director: "Kate Herron", phase: "Phase 4", year: "2021", type: "Series" },
+  "Black Widow (2021)": { plot: "Natasha Romanoff confronts the darker parts of her ledger when a dangerous conspiracy with ties to her past arises.", genres: ["Action","Adventure","Thriller"], runtime: "2h 14m", rating: "6.7", cast: "Scarlett Johansson, Florence Pugh, David Harbour", director: "Cate Shortland", phase: "Phase 4", year: "2021", type: "Movie" },
+  "What If...? S01 (2021)": { plot: "An anthology series that explores what would happen if major moments from the MCU films took place differently.", genres: ["Animation","Action","Adventure"], runtime: "9 Episodes", rating: "7.4", cast: "Jeffrey Wright, Hayley Atwell, Josh Keaton", director: "Bryan Andrews", phase: "Phase 4", year: "2021", type: "Animated Series" },
+  "Shang-Chi and the Legend of the Ten Rings (2021)": { plot: "Shang-Chi must confront the past he thought he left behind when he is drawn into the web of the mysterious Ten Rings organization.", genres: ["Action","Adventure","Fantasy"], runtime: "2h 12m", rating: "7.4", cast: "Simu Liu, Awkwafina, Tony Leung", director: "Destin Daniel Cretton", phase: "Phase 4", year: "2021", type: "Movie" },
+  "Eternals (2021)": { plot: "The Eternals, an immortal alien race, emerge from hiding after thousands of years to protect Earth from their ancient enemies.", genres: ["Action","Adventure","Drama"], runtime: "2h 37m", rating: "6.3", cast: "Gemma Chan, Richard Madden, Angelina Jolie", director: "Chloé Zhao", phase: "Phase 4", year: "2021", type: "Movie" },
+  "Hawkeye (2021)": { plot: "Former Avenger Clint Barton has a seemingly simple mission: get back to his family for Christmas. Possible? Maybe with the help of Kate Bishop.", genres: ["Action","Comedy","Crime"], runtime: "6 Episodes", rating: "7.5", cast: "Jeremy Renner, Hailee Steinfeld, Vera Farmiga", director: "Rhys Thomas", phase: "Phase 4", year: "2021", type: "Series" },
+  "Spider-Man: No Way Home (2021)": { plot: "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear.", genres: ["Action","Adventure","Fantasy"], runtime: "2h 28m", rating: "8.2", cast: "Tom Holland, Zendaya, Benedict Cumberbatch", director: "Jon Watts", phase: "Phase 4", year: "2021", type: "Movie" },
+  "Moon Knight (2022)": { plot: "Steven Grant discovers he's been granted the powers of an Egyptian moon god as he crosses paths with a deadly cult.", genres: ["Action","Adventure","Fantasy"], runtime: "6 Episodes", rating: "7.3", cast: "Oscar Isaac, Ethan Hawke, May Calamawy", director: "Mohamed Diab", phase: "Phase 4", year: "2022", type: "Series" },
+  "Doctor Strange in the Multiverse of Madness (2022)": { plot: "Doctor Strange teams with a mysterious Avenger to face a powerful adversary bent on making the Multiverse a truly strange place.", genres: ["Action","Adventure","Fantasy"], runtime: "2h 6m", rating: "6.9", cast: "Benedict Cumberbatch, Elizabeth Olsen, Rachel McAdams", director: "Sam Raimi", phase: "Phase 4", year: "2022", type: "Movie" },
+  "Ms. Marvel (2022)": { plot: "Kamala Khan, a Pakistani-American teen growing up in Jersey City, is a devoted fan of the Avengers — particularly Captain Marvel.", genres: ["Action","Adventure","Comedy"], runtime: "6 Episodes", rating: "6.2", cast: "Iman Vellani, Matt Lintz, Yasmeen Fletcher", director: "Adil El Arbi", phase: "Phase 4", year: "2022", type: "Series" },
+  "Thor: Love and Thunder (2022)": { plot: "Thor must embark on a journey unlike anything he's ever faced — a quest for inner peace. But his retirement is interrupted by Gorr the God Butcher.", genres: ["Action","Adventure","Comedy"], runtime: "1h 59m", rating: "6.3", cast: "Chris Hemsworth, Natalie Portman, Christian Bale", director: "Taika Waititi", phase: "Phase 4", year: "2022", type: "Movie" },
+  "I Am Groot (2022)": { plot: "A series of shorts following Baby Groot as he grows up, getting into trouble with some hilarious and strange new characters.", genres: ["Animation","Comedy","Adventure"], runtime: "5 Shorts", rating: "7.3", cast: "Vin Diesel, Bradley Cooper", director: "Kirsten Lepore", phase: "Phase 4", year: "2022", type: "Animated Series" },
+  "She-Hulk (2022)": { plot: "Jennifer Walters navigates the complicated life of a single, 30-something attorney who also happens to be a green 6-foot-7-inch superpowered hulk.", genres: ["Action","Comedy","Drama"], runtime: "9 Episodes", rating: "5.2", cast: "Tatiana Maslany, Jameela Jamil, Mark Ruffalo", director: "Kat Coiro", phase: "Phase 4", year: "2022", type: "Series" },
+  "Werewolf By Night (2022)": { plot: "On a dark and somber night, a secret group of monster hunters emerge from the shadows and gather at Bloodstone Temple following the death of their leader.", genres: ["Action","Horror","Mystery"], runtime: "54m", rating: "7.1", cast: "Gael García Bernal, Laura Donnelly", director: "Michael Giacchino", phase: "Phase 4", year: "2022", type: "Special Presentation" },
+  "Black Panther: Wakanda Forever (2022)": { plot: "Queen Ramonda, Shuri, M'Baku, Okoye and the Dora Milaje fight to protect their nation from intervening world powers in the wake of King T'Challa's death.", genres: ["Action","Adventure","Drama"], runtime: "2h 41m", rating: "7.1", cast: "Letitia Wright, Angela Bassett, Lupita Nyong'o", director: "Ryan Coogler", phase: "Phase 4", year: "2022", type: "Movie" },
+  "Guardians of the Galaxy Christmas Special (2022)": { plot: "The Guardians travel to Earth on a mission to find the perfect Christmas gift for Peter Quill.", genres: ["Action","Comedy","Sci-Fi"], runtime: "44m", rating: "7.3", cast: "Dave Bautista, Pom Klementieff, Kevin Bacon", director: "James Gunn", phase: "Phase 4", year: "2022", type: "Special Presentation" },
+  "Ant-Man and the Wasp: Quantumania (2023)": { plot: "Scott Lang and Hope Van Dyne are pulled into the Quantum Realm, along with Hope's parents and Scott's daughter Cassie.", genres: ["Action","Adventure","Comedy"], runtime: "2h 4m", rating: "6.1", cast: "Paul Rudd, Evangeline Lilly, Jonathan Majors", director: "Peyton Reed", phase: "Phase 5", year: "2023", type: "Movie" },
+  "Guardians of the Galaxy 3 (2023)": { plot: "Still reeling from the loss of Gamora, Peter Quill must rally his team to defend the universe along with protecting one of their own.", genres: ["Action","Adventure","Comedy"], runtime: "2h 30m", rating: "7.9", cast: "Chris Pratt, Zoe Saldana, Bradley Cooper", director: "James Gunn", phase: "Phase 5", year: "2023", type: "Movie" },
+  "Secret Invasion (2023)": { plot: "Nick Fury learns of a secret invasion of Earth by a faction of shape-shifting Skrulls who have been infiltrating Earth for years.", genres: ["Action","Drama","Thriller"], runtime: "6 Episodes", rating: "6.0", cast: "Samuel L. Jackson, Ben Mendelsohn, Emilia Clarke", director: "Ali Selim", phase: "Phase 5", year: "2023", type: "Series" },
+  "I Am Groot S02 (2023)": { plot: "More misadventures with Groot as he grows up in the Guardians' spaceship, encountering strange aliens and peculiar situations.", genres: ["Animation","Comedy","Adventure"], runtime: "5 Shorts", rating: "7.2", cast: "Vin Diesel", director: "Kirsten Lepore", phase: "Phase 5", year: "2023", type: "Animated Series" },
+  "Loki season 2 (2023)": { plot: "Loki struggles with time-slipping and must work with Agent Mobius to safeguard the TVA from a powerful new threat.", genres: ["Action","Adventure","Fantasy"], runtime: "6 Episodes", rating: "8.2", cast: "Tom Hiddleston, Sophia Di Martino, Owen Wilson", director: "Justin Benson & Aaron Moorhead", phase: "Phase 5", year: "2023", type: "Series" },
+  "The Marvels (2023)": { plot: "Carol Danvers, Kamala Khan and Monica Rambeau must work together when they find their superpowers mysteriously linked.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 45m", rating: "5.5", cast: "Brie Larson, Teyonah Parris, Iman Vellani", director: "Nia DaCosta", phase: "Phase 5", year: "2023", type: "Movie" },
+  "What If...? season 2 (2023)": { plot: "The Watcher continues to explore alternate MCU timelines in new episodes of the acclaimed animated anthology series.", genres: ["Animation","Action","Adventure"], runtime: "9 Episodes", rating: "7.4", cast: "Jeffrey Wright, Hayley Atwell", director: "Bryan Andrews", phase: "Phase 5", year: "2023", type: "Animated Series" },
+  "Echo (2024)": { plot: "Maya Lopez must face her own past, reconnect with her Native American roots, and embrace the meaning of family and community if she is ever going to move forward.", genres: ["Action","Crime","Drama"], runtime: "5 Episodes", rating: "6.3", cast: "Alaqua Cox, Charlie Cox, Vincent D'Onofrio", director: "Sydney Freeland", phase: "Phase 5", year: "2024", type: "Series" },
+  "Deadpool & Wolverine (2024)": { plot: "Deadpool and Wolverine's complex relationship comes to define an unlikely pair's greatest adventure together as they face a series of dangerous obstacles.", genres: ["Action","Comedy","Sci-Fi"], runtime: "2h 7m", rating: "7.7", cast: "Ryan Reynolds, Hugh Jackman, Emma Corrin", director: "Shawn Levy", phase: "Phase 5", year: "2024", type: "Movie" },
+  "Agatha All Along (2024)": { plot: "Agatha Harkness finds herself stripped of her powers by a mysterious teen who needs her expertise as a witch to lead a coven of witches on a perilous path.", genres: ["Fantasy","Drama","Comedy"], runtime: "9 Episodes", rating: "7.2", cast: "Kathryn Hahn, Joe Locke, Patti LuPone", director: "Jac Schaeffer", phase: "Phase 5", year: "2024", type: "Series" },
+  "What If...? season 3 (2024)": { plot: "The final season of the MCU's animated anthology series delivers epic multiverse-spanning conclusions to beloved characters.", genres: ["Animation","Action","Adventure"], runtime: "8 Episodes", rating: "7.6", cast: "Jeffrey Wright, Hayley Atwell, Josh Keaton", director: "Bryan Andrews", phase: "Phase 5", year: "2024", type: "Animated Series" },
+  "Captain America: Brave New World (2025)": { plot: "Sam Wilson, aka Captain America, finds himself in the middle of an international incident and must discover the motive behind a nefarious global plot.", genres: ["Action","Adventure","Thriller"], runtime: "1h 58m", rating: "6.0", cast: "Anthony Mackie, Danny Ramirez, Harrison Ford", director: "Julius Onah", phase: "Phase 5", year: "2025", type: "Movie" },
+  "Daredevil: Born Again S01 (2025)": { plot: "Matt Murdock struggles to balance his life as a lawyer with his secret identity as Daredevil in a new chapter of the Man Without Fear.", genres: ["Action","Crime","Drama"], runtime: "9 Episodes", rating: "8.1", cast: "Charlie Cox, Vincent D'Onofrio, Jon Bernthal", director: "Dario Scardapane", phase: "Phase 5", year: "2025", type: "Series" },
+  "Thunderbolts* (2025)": { plot: "A group of antiheroes are brought together by a U.S. Government program and must decide whether to embrace their dark pasts or forge a new path.", genres: ["Action","Adventure","Drama"], runtime: "2h 7m", rating: "7.4", cast: "Florence Pugh, Sebastian Stan, David Harbour", director: "Jake Schreier", phase: "Phase 5", year: "2025", type: "Movie" },
+  "Ironheart S01 (2025)": { plot: "Riri Williams, a genius inventor who creates the most powerful suit of armor since Iron Man, navigates Chicago's criminal underworld.", genres: ["Action","Adventure","Drama"], runtime: "6 Episodes", rating: "7.0", cast: "Dominique Thorne, Anthony Ramos, Lyric Ross", director: "Chinaka Hodge", phase: "Phase 5", year: "2025", type: "Series" },
+  "The Fantastic Four: First Steps (2025)": { plot: "Marvel's First Family, the Fantastic Four, make their MCU debut in a retro-futuristic world as they face an immense and powerful new threat.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 10m", rating: "7.5", cast: "Pedro Pascal, Vanessa Kirby, Joseph Quinn, Ebon Moss-Bachrach", director: "Matt Shakman", phase: "Phase 6", year: "2025", type: "Movie" },
+  "Eyes of Wakanda S01 (2025)": { plot: "An animated anthology series exploring the history of the Vibranium Retrieval Corps and various Wakandan warriors throughout history.", genres: ["Animation","Action","Adventure"], runtime: "4 Episodes", rating: "7.1", cast: "Anika Noni Rose, Jesmille Darbouze", director: "Todd Harris", phase: "Phase 6", year: "2025", type: "Animated Series" },
+  "Marvel Zombies S01 (2025)": { plot: "A unique take on the Marvel universe explores what happens when a zombie apocalypse takes over, forcing heroes to battle the undead versions of their allies.", genres: ["Animation","Horror","Action"], runtime: "4 Episodes", rating: "7.3", cast: "Iman Vellani, Zac Braff, Andrew Garfield", director: "Bryan Andrews", phase: "Phase 6", year: "2025", type: "Animated Series" },
+  "Wonder Man S01 (2026)": { plot: "Simon Williams, a former villain turned hero, tries to make it as an actor in Hollywood while navigating his new life as Wonder Man.", genres: ["Action","Comedy","Drama"], runtime: "6 Episodes", rating: "7.0", cast: "Yahya Abdul-Mateen II, Damon Wayans Jr., Ben Kingsley", director: "Destin Daniel Cretton", phase: "Phase 6", year: "2026", type: "Series" },
+  "Daredevil: Born Again S02 (2026)": { plot: "The second season of Daredevil's Born Again continuation brings more street-level action as Matt Murdock faces new threats to Hell's Kitchen.", genres: ["Action","Crime","Drama"], runtime: "8 Episodes", rating: "8.3", cast: "Charlie Cox, Vincent D'Onofrio, Jon Bernthal", director: "Dario Scardapane", phase: "Phase 6", year: "2026", type: "Series" },
+  "The Punisher: One Last Kill (2026)": { plot: "Frank Castle, the Punisher, undertakes one final mission that will force him to confront the darkest chapter of his war on crime.", genres: ["Action","Crime","Thriller"], runtime: "2h 0m", rating: "7.5", cast: "Jon Bernthal", director: "TBA", phase: "Phase 6", year: "2026", type: "Movie" },
+  // X-Men
+  "X-Men (2000)": { plot: "In a world where mutants exist, Professor Xavier and his team of X-Men protect a world that hates and fears them.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 44m", rating: "7.4", cast: "Hugh Jackman, Patrick Stewart, Ian McKellen", director: "Bryan Singer", phase: null, year: "2000", type: "Movie" },
+  "X2: X-Men United (2003)": { plot: "The X-Men band together to find the mutant assassin who has made an attempt on the President's life, while the Mutant Registration Act looms.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 14m", rating: "7.4", cast: "Hugh Jackman, Patrick Stewart, Ian McKellen", director: "Bryan Singer", phase: null, year: "2003", type: "Movie" },
+  "X-Men: The Last Stand (2006)": { plot: "When a cure is found to treat mutations, lines are drawn amongst the X-Men, led by Professor Charles Xavier, and the Brotherhood, a band of powerful mutants.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 44m", rating: "6.7", cast: "Hugh Jackman, Halle Berry, Ian McKellen", director: "Brett Ratner", phase: null, year: "2006", type: "Movie" },
+  "X-Men Origins: Wolverine (2009)": { plot: "A look at Wolverine's early life, and his time with the government squad Team X before the Weapon X program.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 47m", rating: "6.6", cast: "Hugh Jackman, Liev Schreiber, Ryan Reynolds", director: "Gavin Hood", phase: null, year: "2009", type: "Movie" },
+  "X-Men: First Class (2011)": { plot: "In 1962, during the Cuban Missile Crisis, Charles Xavier and Erik Lehnsherr try to stop a powerful mutant enemy named Sebastian Shaw.", genres: ["Action","Adventure","Drama"], runtime: "2h 12m", rating: "7.7", cast: "James McAvoy, Michael Fassbender, Jennifer Lawrence", director: "Matthew Vaughn", phase: null, year: "2011", type: "Movie" },
+  "The Wolverine (2013)": { plot: "Wolverine comes to Japan to visit an old friend whose life he saved decades ago, and gets embroiled in a conspiracy involving yakuza and mutants.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 6m", rating: "6.7", cast: "Hugh Jackman, Tao Okamoto, Rila Fukushima", director: "James Mangold", phase: null, year: "2013", type: "Movie" },
+  "X-Men: Days of Future Past (2014)": { plot: "The X-Men send Wolverine to the past in a desperate effort to change history and prevent an event that results in doom for both humans and mutants.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 12m", rating: "8.0", cast: "Hugh Jackman, James McAvoy, Michael Fassbender", director: "Bryan Singer", phase: null, year: "2014", type: "Movie" },
+  "Deadpool (2016)": { plot: "A wisecracking mercenary gets experimented on and becomes immortal but ugly, and sets out to track down the man who ruined his looks.", genres: ["Action","Comedy","Sci-Fi"], runtime: "1h 48m", rating: "8.0", cast: "Ryan Reynolds, Morena Baccarin, Ed Skrein", director: "Tim Miller", phase: null, year: "2016", type: "Movie" },
+  "X-Men: Apocalypse (2016)": { plot: "With the emergence of the world's first mutant, Apocalypse, the X-Men must unite to defeat his mystical powers and save humanity.", genres: ["Action","Adventure","Sci-Fi"], runtime: "2h 24m", rating: "6.9", cast: "James McAvoy, Michael Fassbender, Jennifer Lawrence", director: "Bryan Singer", phase: null, year: "2016", type: "Movie" },
+  "Logan (2017)": { plot: "In the near future, a weary Logan cares for an ailing Professor X somewhere on the Mexican border. But Logan's attempts to hide from the world are upended.", genres: ["Action","Drama","Sci-Fi"], runtime: "2h 17m", rating: "8.1", cast: "Hugh Jackman, Patrick Stewart, Dafne Keen", director: "James Mangold", phase: null, year: "2017", type: "Movie" },
+  "Deadpool 2 (2018)": { plot: "Foul-mouthed mutant mercenary Wade Wilson fights alongside X-Force, a team of mutant heroes, as he and his team face Cable, a no-nonsense cyborg from the future.", genres: ["Action","Comedy","Sci-Fi"], runtime: "1h 59m", rating: "7.7", cast: "Ryan Reynolds, Josh Brolin, Morena Baccarin", director: "David Leitch", phase: null, year: "2018", type: "Movie" },
+  "Dark Phoenix (2019)": { plot: "Jean Grey begins to develop incredible powers that corrupt and turn her into a Dark Phoenix. Now the X-Men will have to decide if the life of a team member is worth more than all the people living on Earth.", genres: ["Action","Adventure","Sci-Fi"], runtime: "1h 53m", rating: "5.7", cast: "James McAvoy, Michael Fassbender, Sophie Turner", director: "Simon Kinberg", phase: null, year: "2019", type: "Movie" },
+  "The New Mutants (2020)": { plot: "Five young mutants, just discovering their abilities while held in a secret facility against their will, fight to escape their past sins and save themselves.", genres: ["Action","Horror","Sci-Fi"], runtime: "1h 34m", rating: "5.3", cast: "Maisie Williams, Anya Taylor-Joy, Charlie Heaton", director: "Josh Boone", phase: null, year: "2020", type: "Movie" },
+};
+
+// ─── DOWNLOAD DATA ─────────────────────────────────────────────
+const DOWNLOADS = {
+  "Iron Man (2008)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNT0xMg" }],
+  "The Incredible Hulk (2008)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjM9Mjc" }],
+  "Iron Man 2 (2010)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDI9NDY" }],
+  "Thor (2011)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDc9NTE" }],
+  "Captain America: The First Avenger (2011)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTI9NjE" }],
+  "The Avengers (2012)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjI9Njc" }],
+  "Iron Man 3 (2013)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjk9NzY" }],
+  "Thor: The Dark World (2013)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzg9ODM" }],
+  "Captain America: The Winter Soldier (2014)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODQ9OTE" }],
+  "Guardians of the Galaxy (2014)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTM9OTg" }],
+  "Avengers: Age of Ultron (2015)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTk9MTA4" }],
+  "Ant-Man (2015)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTA5PTExNA" }],
+  "Captain America: Civil War (2016)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTE1PTEyMg" }],
+  "Doctor Strange (2016)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTIzPTEyOQ" }],
+  "Guardians of the Galaxy 2 (2017)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTMwPTEzNA" }],
+  "Spider-Man: Homecoming (2017)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTM1PTEzOQ" }],
+  "Thor: Ragnarok (2017)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTQwPTE0NA" }],
+  "Black Panther (2018)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTQ1PTE0OQ" }],
+  "Avengers: Infinity War (2018)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTUwPTE1OQ" }],
+  "Ant-Man and the Wasp (2018)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTYwPTE2NQ" }],
+  "Captain Marvel (2019)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY2PTE3MQ" }],
+  "Avengers: Endgame (2019)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTcyPTE3Nw" }],
+  "Spider-Man: Far From Home (2019)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTc4PTE4Mw" }],
+  "WandaVision (2021)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjA3PTIxNQ" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTg3PTE5NQ" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjE3PTIyNQ" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk3PTIwNQ" }
+  ],
+  "Falcon and the Winter Soldier (2021)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjI4PTIzMw" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjM0PTIzOQ" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjQwPTI0Ng" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjQ3PTI1Mw" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjU0PTI2MA" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjYxPTI2Nw" }
+  ],
+  "Loki season 1 (2021)": [
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjcwPTI3Ng" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjc3PTI4Mw" },
+    { quality: "2160p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjg0PTI5MQ" }
+  ],
+  "Black Widow (2021)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjk0PTMwMA" }],
+  "What If...? S01 (2021)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzAzPTMwOA" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzA5PTMxMw" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzE0PTMxOA" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzE5PTMyMw" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzI0PTMyOA" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzI5PTMzMw" },
+    { quality: "Episode 7", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzM0PTMzOA" },
+    { quality: "Episode 8", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzM5PTM0Mw" },
+    { quality: "Episode 9", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzQ0PTM1Mg" }
+  ],
+  "Shang-Chi and the Legend of the Ten Rings (2021)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzU1PTM2MQ" }],
+  "Eternals (2021)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzYyPTM2OQ" }],
+  "Hawkeye (2021)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDAxPTQwOA" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzg1PTM5MQ" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMzkyPTM5OA" }
+  ],
+  "Spider-Man: No Way Home (2021)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDExPTQxOQ" }],
+  "Moon Knight (2022)": [
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDIxPTQyNw" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDI4PTQzNA" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDM1PTQ0MQ" },
+    { quality: "2160p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDQyPTQ1MA" }
+  ],
+  "Doctor Strange in the Multiverse of Madness (2022)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDUzPTQ2MQ" }],
+  "Ms. Marvel (2022)": [
+    { quality: "480p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDYzPTQ2OQ" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDcwPTQ3Ng" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDc3PTQ4Mw" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDg0PTQ5MA" },
+    { quality: "2160p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNDkxPTQ5OQ" }
+  ],
+  "Thor: Love and Thunder (2022)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTAzPTUxMg" }],
+  "I Am Groot (2022)": [
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTE0PTUxOQ" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTIwPTUyNQ" },
+    { quality: "S01 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTI2PTUyOQ" }
+  ],
+  "She-Hulk (2022)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTMyPTU0MQ" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTQyPTU1MQ" },
+    { quality: "2160p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTUyPTU2MQ" }
+  ],
+  "Werewolf By Night (2022)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FOOL4146994638243" }],
+  "Black Panther: Wakanda Forever (2022)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTg3PTU5Mw" }],
+  "Guardians of the Galaxy Christmas Special (2022)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNTk0PTU5OQ" }],
+  "Ant-Man and the Wasp: Quantumania (2023)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjAwPTYwNQ" }],
+  "Guardians of the Galaxy 3 (2023)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjEzPTYyMg" }],
+  "Secret Invasion (2023)": [
+    { quality: "480p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjI0PTYzMQ" },
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjMyPTYzOQ" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjQwPTY0Nw" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjQ4PTY1NQ" },
+    { quality: "S01 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjU2PTY2MA" }
+  ],
+  "I Am Groot S02 (2023)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjYzPTY2OA" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjY5PTY3NA" },
+    { quality: "S02 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjc1PTY3OA" }
+  ],
+  "Loki season 2 (2023)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjgxPTY4Ng" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjg3PTY5Mg" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjkzPTY5OA" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNjk5PTcwNA" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzA1PTcxMA" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzExPTcxNg" }
+  ],
+  "The Marvels (2023)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzE5PTcyNg" }],
+  "What If...? season 2 (2023)": [
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzI5PTczOA" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzM5PTc0OA" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzQ5PTc1OA" },
+    { quality: "2160p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzU5PTc2OA" },
+    { quality: "S01 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzY5PTc3Mg" }
+  ],
+  "Echo (2024)": [
+    { quality: "480p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzc2PTc4Mw" },
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLNzg1PTc5Mg" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODAwPTgwNw" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODA4PTgxNQ" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODE2PTgyMw" },
+    { quality: "S01 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODI0PTgyOA" }
+  ],
+  "Deadpool & Wolverine (2024)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTAwMD0xMDA5" }],
+  "Agatha All Along (2024)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODUwPTg1NQ" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODU2PTg2MQ" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODYyPTg2OA" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLODg3PTg5Ng" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTE5PTkyNg" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTI4PTkzNw" },
+    { quality: "Episode 7", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTQ1PTk1Mw" },
+    { quality: "Episode 8", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTYyPTk3MQ" },
+    { quality: "Episode 9", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLOTg0PTk1MQ" }
+  ],
+  "What If...? season 3 (2024)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTA1MT0xMDYw" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTA3Mz0xMDgy" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTA4Mz0xMDkx" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTA5Nj0xMTAz" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTE1Mj0xMTYw" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTE2NT0xMTcz" },
+    { quality: "Episode 7", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTEyMj0xMTMx" },
+    { quality: "Episode 8", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTEzMz0xMTQy" }
+  ],
+  "Captain America: Brave New World (2025)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTM3MT0xMzc4" }],
+  "Daredevil: Born Again S01 (2025)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTIyNz0xMjM2" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTIzNz0xMjQ2" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTI1Nj0xMjY1" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTI3OT0xMjg4" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTMwMD0xMzA5" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTMyMD0xMzI5" },
+    { quality: "Episode 7", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTM1MT0xMzU5" },
+    { quality: "Episode 8", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTM2Mj0xMzY5" },
+    { quality: "Episode 9", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTQxMD0xNDE4" }
+  ],
+  "Thunderbolts* (2025)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTU0Mz0xNTUw" }],
+  "Ironheart S01 (2025)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTQ4Mz0xNDkx" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTQ5Mz0xNTAy" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTUwMz0xNTEy" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTUxMz0xNTIx" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTUyMj0xNTMx" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTUzMj0xNTQx" }
+  ],
+  "The Fantastic Four: First Steps (2025)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTYxMz0xNjIx" }],
+  "Eyes of Wakanda S01 (2025)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTU3Mj0xNTc4" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTU4Nj0xNTky" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTU3OT0xNTg1" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTYwMD0xNjA2" },
+    { quality: "S01 Combined", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTU5Mz0xNTk5" }
+  ],
+  "Marvel Zombies S01 (2025)": [
+    { quality: "720p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTYzNT0xNjQx" },
+    { quality: "720p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY1MD0xNjU2" },
+    { quality: "1080p", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY0Mj0xNjQ4" },
+    { quality: "1080p 10bit", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY1Nz0xNjYz" }
+  ],
+  "Wonder Man S01 (2026)": [
+    { quality: "480p H264", audio: "Hindi, English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk5Nj0yMDA1" },
+    { quality: "720p 10bit", audio: "English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk2Nj0xOTc1" },
+    { quality: "720p H264", audio: "Hindi, English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMjAwNj0yMDE1" },
+    { quality: "1080p 10bit", audio: "English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk3Nj0xOTg1" },
+    { quality: "1080p JHS H265", audio: "Hindi, English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMjAxNj0yMDI1" },
+    { quality: "1080p H264", audio: "English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk0ND0xOTUz" },
+    { quality: "1080p H265", audio: "Hindi, English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk1ND0xOTYz" },
+    { quality: "1080p HEVC 10bit", audio: "English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMTk4Nj0xOTk1" },
+    { quality: "2160p H265", audio: "Hindi, English", url: "https://t.me/Mcumoviesmibbot?start=FBOLMjAyNj0yMDM1" }
+  ],
+  "Daredevil: Born Again S02 (2026)": [
+    { quality: "Episode 1", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjA0OT0yMDU4" },
+    { quality: "Episode 2", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjA2MD0yMDY5" },
+    { quality: "Episode 3", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjA3MD0yMDc4" },
+    { quality: "Episode 4", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjA5ND0yMTAz" },
+    { quality: "Episode 5", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjEwND0yMTEz" },
+    { quality: "Episode 6", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjExND0yMTIz" },
+    { quality: "Episode 7", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjE2MT0yMTY5" },
+    { quality: "Episode 8", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjIxMT0yMjIw" }
+  ],
+  "The Punisher: One Last Kill (2026)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMjIyNT0yMjMy" }],
+  "X-Men (2000)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY3OT0xNjg4" }],
+  "X2: X-Men United (2003)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTY5ND0xNzAz" }],
+  "X-Men: The Last Stand (2006)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTcwOD0xNzE3" }],
+  "X-Men Origins: Wolverine (2009)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTcyNT0xNzM0" }],
+  "X-Men: First Class (2011)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTc0MT0xNzUw" }],
+  "The Wolverine (2013)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTc1MT0xNzYw" }],
+  "X-Men: Days of Future Past (2014)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTc3MD0xNzc5" }],
+  "Deadpool (2016)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTc4OT0xNzk4" }],
+  "X-Men: Apocalypse (2016)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTgyNT0xODM0" }],
+  "Logan (2017)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTg0MT0xODUw" }],
+  "Deadpool 2 (2018)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTg2NT0xODc0" }],
+  "Dark Phoenix (2019)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTg5ND0xOTAz" }],
+  "The New Mutants (2020)": [{ quality: "Download", audio: null, url: "https://t.me/Mcumoviesmibbot?start=FBOLMTkxOT0xOTI4" }],
+};
+
+// ─── SECTIONS CONFIG ────────────────────────────────────────────
+const PHASES = [
+  { label: "Marvel Phase 1", titles: ["Iron Man (2008)","The Incredible Hulk (2008)","Iron Man 2 (2010)","Thor (2011)","Captain America: The First Avenger (2011)","The Avengers (2012)"] },
+  { label: "Marvel Phase 2", titles: ["Iron Man 3 (2013)","Thor: The Dark World (2013)","Captain America: The Winter Soldier (2014)","Guardians of the Galaxy (2014)","Avengers: Age of Ultron (2015)","Ant-Man (2015)"] },
+  { label: "Marvel Phase 3", titles: ["Captain America: Civil War (2016)","Doctor Strange (2016)","Guardians of the Galaxy 2 (2017)","Spider-Man: Homecoming (2017)","Thor: Ragnarok (2017)","Black Panther (2018)","Avengers: Infinity War (2018)","Ant-Man and the Wasp (2018)","Captain Marvel (2019)","Avengers: Endgame (2019)","Spider-Man: Far From Home (2019)"] },
+  { label: "Marvel Phase 4", titles: ["WandaVision (2021)","Falcon and the Winter Soldier (2021)","Loki season 1 (2021)","Black Widow (2021)","What If...? S01 (2021)","Shang-Chi and the Legend of the Ten Rings (2021)","Eternals (2021)","Hawkeye (2021)","Spider-Man: No Way Home (2021)","Moon Knight (2022)","Doctor Strange in the Multiverse of Madness (2022)","Ms. Marvel (2022)","Thor: Love and Thunder (2022)","I Am Groot (2022)","She-Hulk (2022)","Werewolf By Night (2022)","Black Panther: Wakanda Forever (2022)","Guardians of the Galaxy Christmas Special (2022)"] },
+  { label: "Marvel Phase 5", titles: ["Ant-Man and the Wasp: Quantumania (2023)","Guardians of the Galaxy 3 (2023)","Secret Invasion (2023)","I Am Groot S02 (2023)","Loki season 2 (2023)","The Marvels (2023)","What If...? season 2 (2023)","Echo (2024)","Deadpool & Wolverine (2024)","Agatha All Along (2024)","What If...? season 3 (2024)","Captain America: Brave New World (2025)","Daredevil: Born Again S01 (2025)","Thunderbolts* (2025)","Ironheart S01 (2025)"] },
+  { label: "Marvel Phase 6", titles: ["The Fantastic Four: First Steps (2025)","Eyes of Wakanda S01 (2025)","Marvel Zombies S01 (2025)","Wonder Man S01 (2026)","Daredevil: Born Again S02 (2026)","The Punisher: One Last Kill (2026)"] },
+];
+
+const XMEN_TITLES = ["X-Men (2000)","X2: X-Men United (2003)","X-Men: The Last Stand (2006)","X-Men Origins: Wolverine (2009)","X-Men: First Class (2011)","The Wolverine (2013)","X-Men: Days of Future Past (2014)","Deadpool (2016)","X-Men: Apocalypse (2016)","Logan (2017)","Deadpool 2 (2018)","Deadpool & Wolverine (2024)","Dark Phoenix (2019)","The New Mutants (2020)"];
+
+// ─── HELPERS ────────────────────────────────────────────────────
+function getTitleKey(title) {
+  return Object.keys(MCU_META).find(k => 
+    k === title || k.toLowerCase().includes(title.toLowerCase().replace(/\s+\(\d{4}\)$/, '').toLowerCase())
+  ) || title;
+}
+
+function getPosterSlug(title) {
+  return title.replace(/\.\.\./g, '').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, '-').replace(/-+/g, '-').toLowerCase().trim();
+}
+
+function getPosterPath(title) {
+  const clean = title.replace(/\s*\(\d{4}\)$/, '').replace(/season\s+\d+/i, s => {
+    const n = s.match(/\d+/)[0];
+    return 'season-' + n;
+  });
+  return 'posters/' + getPosterSlug(clean) + '.png';
+}
+
+function svgTelegram() {
+  return `<svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`;
+}
+
+// ─── CARD BUILDER ───────────────────────────────────────────────
+function buildCard(titleKey, small) {
+  const meta = MCU_META[titleKey] || {};
+  const poster = getPosterPath(titleKey);
+  const type = meta.type || 'Movie';
+  const year = meta.year || titleKey.match(/\((\d{4})\)/)?.[1] || '';
+  const displayTitle = titleKey.replace(/\s*\(\d{4}\)$/, '').replace(/\bS0?(\d)\b/g, 'S$1');
+  const slug = slugify(titleKey);
+
+  return `<div class="card" onclick="openModal('${slug}')">
+    <div class="card-poster">
+      <img src="${poster}" onerror="this.src='posters/placeholder.png'" alt="${displayTitle}" loading="lazy">
+      <div class="card-type-tag">${type}</div>
+      <div class="card-poster-overlay">
+        <button class="card-play-btn">▶</button>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${displayTitle}</div>
+      <div class="card-year">${year}${meta.rating ? ' · ⭐ ' + meta.rating : ''}</div>
+    </div>
+  </div>`;
+}
+
+// ─── BUILD HOME ──────────────────────────────────────────────────
+function buildHome() {
+  const container = document.getElementById('home-content');
+  let html = '';
+
+  PHASES.forEach(phase => {
+    html += `<div class="section fade-in">
+      <div class="section-header">
+        <div class="section-title">${phase.label}</div>
+        <div class="section-badge">${phase.titles.filter(t=>MCU_META[t]?.type==='Movie').length} Movies</div>
+        <div class="section-count">${phase.titles.length} titles</div>
+      </div>
+      <div class="scroll-row">
+        ${phase.titles.map(t => buildCard(t)).join('')}
+      </div>
+    </div>
+    <div class="divider"></div>`;
+  });
+
+  // X-Men row
+  html += `<div class="section fade-in">
+    <div class="section-header">
+      <div class="section-title">X-Men Collection</div>
+      <div class="section-badge">Fox/MCU</div>
+      <div class="section-count">${XMEN_TITLES.length} films</div>
+    </div>
+    <div class="scroll-row">
+      ${XMEN_TITLES.map(t => buildCard(t)).join('')}
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+  setupFadeIn();
+}
+
+// ─── BUILD PHASES PAGE ───────────────────────────────────────────
+function buildPhasesPage() {
+  const container = document.getElementById('phases-content');
+  let html = '';
+  PHASES.forEach(phase => {
+    html += `<div class="phase-divider">
+      <div class="phase-divider-label">${phase.label.replace('Marvel ', '')}</div>
+      <div class="phase-divider-line"></div>
+      <span style="font-size:12px;color:var(--text-dim)">${phase.titles.length} titles</span>
+    </div>
+    <div class="search-grid" style="padding:12px 0 8px">
+      ${phase.titles.map(t => buildCard(t)).join('')}
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ─── BUILD XMEN PAGE ─────────────────────────────────────────────
+function buildXmenPage() {
+  const container = document.getElementById('xmen-grid');
+  container.innerHTML = XMEN_TITLES.map(t => buildCard(t)).join('');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+const slugToTitle = {};
+Object.keys(MCU_META).forEach(k => { slugToTitle[slugify(k)] = k; });
+
+function openModal(slug) {
+  const titleKey = slugToTitle[slug];
+  if (!titleKey) return;
+  const meta = MCU_META[titleKey] || {};
+  const downloads = DOWNLOADS[titleKey] || [];
+  const poster = getPosterPath(titleKey);
+  const displayTitle = titleKey.replace(/\s*\(\d{4}\)$/, '');
+
+  document.getElementById('modal-bg-img').src = poster;
+  document.getElementById('modal-bg-img').onerror = function() { this.src = 'posters/placeholder.png'; };
+  document.getElementById('modal-poster-img').src = poster;
+  document.getElementById('modal-poster-img').onerror = function() { this.src = 'posters/placeholder.png'; };
+  document.getElementById('modal-type').textContent = meta.type || 'Movie';
+  document.getElementById('modal-title').textContent = displayTitle;
+
+  // Meta tags
+  const metaEl = document.getElementById('modal-meta');
+  metaEl.innerHTML = '';
+  if (meta.year) metaEl.innerHTML += `<span class="modal-tag">${meta.year}</span>`;
+  if (meta.runtime) metaEl.innerHTML += `<span class="modal-tag">${meta.runtime}</span>`;
+  if (meta.phase) metaEl.innerHTML += `<span class="modal-tag">${meta.phase}</span>`;
+  if (meta.rating) metaEl.innerHTML += `<span class="modal-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${meta.rating} IMDb</span>`;
+
+  // Genres
+  const genresEl = document.getElementById('modal-genres');
+  genresEl.innerHTML = (meta.genres || []).map(g => `<span class="genre-tag">${g}</span>`).join('');
+
+  // Plot
+  document.getElementById('modal-plot').textContent = meta.plot || 'No description available.';
+
+  // Details grid
+  const detailsEl = document.getElementById('modal-details');
+  let detailsHtml = '';
+  if (meta.director) detailsHtml += `<div class="modal-detail-item"><label>Director / Creator</label><span>${meta.director}</span></div>`;
+  if (meta.cast) detailsHtml += `<div class="modal-detail-item"><label>Cast</label><span>${meta.cast}</span></div>`;
+  document.getElementById('modal-details').innerHTML = detailsHtml;
+
+  // Downloads
+  const dlEl = document.getElementById('modal-downloads');
+  if (downloads.length === 0) {
+    dlEl.innerHTML = '';
+  } else if (downloads.length === 1 && downloads[0].quality === 'Download') {
+    const url = convertTgLink(downloads[0].url);
+    dlEl.innerHTML = `<a class="tg-btn-large" href="${url}" target="_blank" rel="noopener">${svgTelegram()} Download on Telegram</a>`;
+  } else {
+    const isEpisode = downloads[0].quality.toLowerCase().startsWith('episode');
+    const sectionTitle = isEpisode ? 'Episodes' : 'Download Options';
+    let dlHtml = `<div class="download-title">${sectionTitle}</div><div class="download-grid">`;
+    downloads.forEach(d => {
+      const url = convertTgLink(d.url);
+      dlHtml += `<div class="download-card">
+        <div class="download-card-info">
+          <div class="download-quality">${d.quality}</div>
+          ${d.audio ? `<div class="download-audio">🔊 ${d.audio}</div>` : ''}
+        </div>
+        <a class="tg-btn" href="${url}" target="_blank" rel="noopener">${svgTelegram()} Telegram</a>
+      </div>`;
+    });
+    dlHtml += '</div>';
+    dlEl.innerHTML = dlHtml;
+  }
+
+  document.getElementById('modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ─── PAGE NAVIGATION ────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+  if (name === 'search-nav') {
+    document.getElementById('search-page').classList.add('active');
+    document.querySelectorAll('.bn-item')[2].classList.add('active');
+    document.getElementById('search-input').focus();
+    handleSearch(document.getElementById('search-input').value);
+    return;
+  }
+
+  const pageMap = { home: 'home-page', phases: 'phases-page', xmen: 'xmen-page' };
+  const bnMap = { home: 0, phases: 1, xmen: 3 };
+  
+  if (pageMap[name]) {
+    document.getElementById(pageMap[name]).classList.add('active');
+    if (bnMap[name] !== undefined) {
+      document.querySelectorAll('.bn-item')[bnMap[name]]?.classList.add('active');
+    }
+  }
+
+  window.scrollTo(0, 0);
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────
+function handleSearch(query) {
+  const q = (query || '').trim().toLowerCase();
+  const resultsEl = document.getElementById('search-results');
+  const emptyEl = document.getElementById('search-empty');
+  const headingEl = document.getElementById('search-heading');
+
+  if (!q) {
+    headingEl.textContent = 'All Titles';
+    const allTitles = [...PHASES.flatMap(p => p.titles), ...XMEN_TITLES.filter(t => !PHASES.flatMap(p=>p.titles).includes(t))];
+    resultsEl.innerHTML = [...new Set(allTitles)].map(t => buildCard(t)).join('');
+    emptyEl.style.display = 'none';
+    resultsEl.style.display = 'grid';
+
+    // Show search page
+    if (!document.getElementById('search-page').classList.contains('active')) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('search-page').classList.add('active');
+    }
+    return;
+  }
+
+  // Show search page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('search-page').classList.add('active');
+
+  const allTitles = [...new Set([...PHASES.flatMap(p => p.titles), ...XMEN_TITLES])];
+  const results = allTitles.filter(t => {
+    const meta = MCU_META[t] || {};
+    return t.toLowerCase().includes(q) ||
+      (meta.cast || '').toLowerCase().includes(q) ||
+      (meta.genres || []).join(' ').toLowerCase().includes(q) ||
+      (meta.director || '').toLowerCase().includes(q);
+  });
+
+  headingEl.textContent = `Results for "${query}" (${results.length})`;
+  if (results.length === 0) {
+    resultsEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    resultsEl.style.display = 'none';
+  } else {
+    resultsEl.innerHTML = results.map(t => buildCard(t)).join('');
+    emptyEl.style.display = 'none';
+    resultsEl.style.display = 'grid';
+  }
+}
+
+// ─── FADE IN OBSERVER ────────────────────────────────────────────
+function setupFadeIn() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+}
+
+// ─── ESCAPE KEY ──────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────
+buildHome();
+buildPhasesPage();
+buildXmenPage();
+</script>
+</body>
+</html>
