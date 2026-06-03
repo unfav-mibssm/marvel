@@ -505,7 +505,7 @@ body {
 }
 .card:hover .card-wl-btn { opacity: 1; }
 .card-wl-btn:hover { background: rgba(232,25,44,0.8); transform: scale(1.1); }
-.card-wl-btn.in-list { opacity: 1; background: rgba(232,25,44,0.9); }
+.card-wl-btn.in-list { opacity: 1; background: rgba(22,25,44,0.9); }
 .card-wl-btn svg { width: 14px; height: 14px; }
 
 /* card overlay on hover */
