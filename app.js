@@ -10,9 +10,7 @@ const State = {
   searchFilter: 'all',
   heroIndex: 0,
 
-  saveWatchlist() {
-    localStorage.setItem('mv_watchlist', JSON.stringify(this.watchlist));
-  },
+  saveWatchlist() { localStorage.setItem('mv_watchlist', JSON.stringify(this.watchlist)); },
   inWatchlist(title) { return this.watchlist.includes(title); },
   addToWatchlist(title) {
     if (!this.inWatchlist(title)) { this.watchlist.push(title); this.saveWatchlist(); return true; }
@@ -24,11 +22,13 @@ const State = {
     return false;
   },
   toggleWatchlist(title) {
-    return this.inWatchlist(title) ? (this.removeFromWatchlist(title), false) : (this.addToWatchlist(title), true);
+    return this.inWatchlist(title)
+      ? (this.removeFromWatchlist(title), false)
+      : (this.addToWatchlist(title), true);
   }
 };
 
-/* ─── HERO TITLES (featured rotation) ─── */
+/* ─── HERO TITLES ─── */
 const HERO_TITLES = [
   "Avengers: Endgame (2019)",
   "Avengers: Infinity War (2018)",
@@ -42,15 +42,41 @@ const HERO_TITLES = [
   "Loki season 2 (2023)"
 ];
 
-/* ─── HELPERS ─── */
+/* ═══════════════════════════════════════════════════
+   BACKDROP LOADER
+   ─────────────────────────────────────────────────
+   Uses a hidden Image() probe to test whether
+   backdrops/<slug>.jpg actually exists on disk.
+
+   onFound(src, isBackdrop) is called with:
+     • src        = the URL to use
+     • isBackdrop = true  → real backdrop found (.jpg)
+                    false → falling back to poster (.png)
+
+   When isBackdrop is false the caller should apply
+   CSS blur so the poster looks cinematic as a bg.
+═══════════════════════════════════════════════════ */
+function loadBackdrop(title, onFound) {
+  const poster   = window.posterPath(title);    // posters/slug.png
+  const backdrop = window.backdropPath(title);  // backdrops/slug.jpg  (defined in data.js)
+
+  const probe    = new Image();
+  probe.onload   = () => onFound(backdrop, true);   // ✅ backdrop found
+  probe.onerror  = () => onFound(poster,   false);  // ❌ missing → use poster
+  probe.src      = backdrop;
+}
+
+/* ─── SMALL HELPERS ─── */
 function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function getTypeBadge(type) {
-  if (type === 'Movie') return '<span class="card-type-badge badge-movie">Movie</span>';
-  if (type === 'Series') return '<span class="card-type-badge badge-series">Series</span>';
-  if (type === 'Animated Series') return '<span class="card-type-badge badge-animated">Animated</span>';
+  if (type === 'Movie')                return '<span class="card-type-badge badge-movie">Movie</span>';
+  if (type === 'Series')               return '<span class="card-type-badge badge-series">Series</span>';
+  if (type === 'Animated Series')      return '<span class="card-type-badge badge-animated">Animated</span>';
   if (type === 'Special Presentation') return '<span class="card-type-badge badge-special">Special</span>';
   return '';
 }
@@ -67,14 +93,8 @@ function heartSVG(filled=false) {
   if (filled) return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#e8192c"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
   return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 }
-
-function plusSVG() {
-  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-}
-
-function checkSVG() {
-  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
-}
+function plusSVG()  { return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`; }
+function checkSVG() { return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`; }
 
 function showToast(msg, icon='✓') {
   const t = document.getElementById('toast');
@@ -85,15 +105,15 @@ function showToast(msg, icon='✓') {
 }
 
 /* ─── CARD BUILDER ─── */
-function buildCard(title, opts = {}) {
-  const meta = window.META[title] || {};
-  const poster = window.posterPath(title);
-  const inList = State.inWatchlist(title);
+function buildCard(title) {
+  const meta         = window.META[title] || {};
+  const poster       = window.posterPath(title);
+  const inList       = State.inWatchlist(title);
   const displayTitle = title.replace(/\s*\(\d{4}\)$/, '');
-  const type = meta.type || 'Movie';
-  const year = meta.year || (title.match(/\((\d{4})\)/)||[])[1] || '';
-  const rating = meta.rating || '';
-  const titleKey = encodeURIComponent(title);
+  const type         = meta.type || 'Movie';
+  const year         = meta.year || (title.match(/\((\d{4})\)/)||[])[1] || '';
+  const rating       = meta.rating || '';
+  const titleKey     = encodeURIComponent(title);
 
   return `
   <div class="card" data-title="${esc(title)}" onclick="openModal('${titleKey}')">
@@ -102,7 +122,9 @@ function buildCard(title, opts = {}) {
            onerror="this.src='posters/placeholder.png'" class="loading"
            onload="this.classList.remove('loading')">
       ${getTypeBadge(type)}
-      <button class="card-wl-btn ${inList?'in-list':''}" onclick="toggleWLFromCard(event,'${esc(title)}')" title="${inList?'Remove from':'Add to'} Watchlist" aria-label="Watchlist">
+      <button class="card-wl-btn ${inList?'in-list':''}"
+              onclick="toggleWLFromCard(event,'${esc(title)}')"
+              title="${inList?'Remove from':'Add to'} Watchlist" aria-label="Watchlist">
         ${heartSVG(inList)}
       </button>
       <div class="card-hover-overlay">
@@ -124,83 +146,75 @@ function buildCard(title, opts = {}) {
 function toggleWLFromCard(event, title) {
   event.stopPropagation();
   const added = State.toggleWatchlist(title);
-  showToast(added ? `Added to Watchlist` : `Removed from Watchlist`, added ? '♥' : '✕');
+  showToast(added ? 'Added to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
   refreshAllWLUI();
 }
 
-/* ─── REFRESH WATCHLIST UI ─── */
+/* ─── WATCHLIST UI SYNC ─── */
 function refreshAllWLUI() {
-  // Update all card WL buttons
   document.querySelectorAll('.card').forEach(card => {
     const title = card.dataset.title;
-    const btn = card.querySelector('.card-wl-btn');
+    const btn   = card.querySelector('.card-wl-btn');
     if (!btn || !title) return;
     const inList = State.inWatchlist(title);
     btn.className = `card-wl-btn ${inList ? 'in-list' : ''}`;
     btn.innerHTML = heartSVG(inList);
-    btn.title = inList ? 'Remove from Watchlist' : 'Add to Watchlist';
+    btn.title     = inList ? 'Remove from Watchlist' : 'Add to Watchlist';
   });
 
-  // Update hero watchlist button
   const heroWL = document.querySelector('.btn-hero-watchlist');
   if (heroWL) {
-    const heroTitle = HERO_TITLES[State.heroIndex];
-    const inList = State.inWatchlist(heroTitle);
+    const inList = State.inWatchlist(HERO_TITLES[State.heroIndex]);
     heroWL.className = `btn-hero-watchlist ${inList ? 'in-list' : ''}`;
-    heroWL.innerHTML = `
-      <span class="plus">${plusSVG()}</span>
-      <span class="check">${checkSVG()}</span>
-      ${inList ? 'In Watchlist' : 'Add to Watchlist'}`;
+    heroWL.innerHTML = `<span class="plus">${plusSVG()}</span><span class="check">${checkSVG()}</span>${inList ? 'In Watchlist' : 'Add to Watchlist'}`;
   }
 
-  // Update nav badge
   const count = State.watchlist.length;
   const badge = document.querySelector('.watchlist-nav-btn .wl-count');
-  if (badge) {
-    badge.textContent = count;
-    badge.className = `wl-count ${count > 0 ? 'visible' : ''}`;
-  }
+  if (badge) { badge.textContent = count; badge.className = `wl-count ${count > 0 ? 'visible' : ''}`; }
 
-  // Update bottom nav badge
   document.querySelectorAll('.bnav-badge').forEach(b => {
     if (b.closest('[data-page="watchlist"]')) {
       b.textContent = count;
-      b.className = `bnav-badge ${count > 0 ? 'visible' : ''}`;
+      b.className   = `bnav-badge ${count > 0 ? 'visible' : ''}`;
     }
   });
 
-  // Update modal WL button if open
   const modalWL = document.querySelector('.modal-wl-btn');
   if (modalWL && modalWL.dataset.title) {
     const inList = State.inWatchlist(modalWL.dataset.title);
     modalWL.className = `modal-wl-btn ${inList ? 'in-list' : ''}`;
-    modalWL.innerHTML = `
-      <span class="plus">${plusSVG()}</span>
-      <span class="check">${checkSVG()}</span>
-      ${inList ? 'In Watchlist' : 'Add to Watchlist'}`;
+    modalWL.innerHTML = `<span class="plus">${plusSVG()}</span><span class="check">${checkSVG()}</span>${inList ? 'In Watchlist' : 'Add to Watchlist'}`;
   }
 
-  // Re-render watchlist page if visible
   if (State.currentPage === 'watchlist') renderWatchlistPage();
 }
 
 /* ═══════════════════════════════════════════════════
    HERO BANNER
+   ─────────────────────────────────────────────────
+   Step 1 → render immediately using poster as bg.
+   Step 2 → loadBackdrop() probe fires in background.
+   Step 3 → on resolve:
+     • backdrop found → swap src, remove blur class
+     • no backdrop    → keep poster src, add blur class
 ═══════════════════════════════════════════════════ */
 let heroTimer = null;
 
 function renderHero(index) {
-  State.heroIndex = index;
-  const title = HERO_TITLES[index];
-  const meta = window.META[title] || {};
-  const poster = window.posterPath(title);
-  const inList = State.inWatchlist(title);
-  const displayTitle = title.replace(/\s*\(\d{4}\)$/, '');
-  const titleKey = encodeURIComponent(title);
+  State.heroIndex   = index;
+  const title       = HERO_TITLES[index];
+  const meta        = window.META[title] || {};
+  const poster      = window.posterPath(title);
+  const inList      = State.inWatchlist(title);
+  const displayTitle= title.replace(/\s*\(\d{4}\)$/, '');
+  const titleKey    = encodeURIComponent(title);
 
-  const hero = document.getElementById('hero');
-  hero.innerHTML = `
-    <img class="hero-bg-img" src="${esc(poster)}" alt="" onerror="this.src='posters/placeholder.png'" aria-hidden="true">
+  // Render immediately with poster — no flicker, no wait
+  document.getElementById('hero').innerHTML = `
+    <img class="hero-bg-img is-poster-fallback" id="hero-bg"
+         src="${esc(poster)}" alt="" aria-hidden="true"
+         onerror="this.src='posters/placeholder.png'">
     <div class="hero-overlay"></div>
     <div class="hero-noise"></div>
     <div class="hero-content">
@@ -211,14 +225,11 @@ function renderHero(index) {
       </div>
       <h1 class="hero-title">${esc(displayTitle)}</h1>
       <div class="hero-meta-row">
-        ${meta.year ? `<span>${esc(meta.year)}</span><span class="dot">●</span>` : ''}
+        ${meta.year    ? `<span>${esc(meta.year)}</span><span class="dot">●</span>` : ''}
         ${meta.runtime ? `<span>${esc(meta.runtime)}</span>` : ''}
-        ${meta.rating ? `<span class="dot">●</span><span class="hero-rating-badge">${starSVG(13)} ${esc(meta.rating)} IMDb</span>` : ''}
+        ${meta.rating  ? `<span class="dot">●</span><span class="hero-rating-badge">${starSVG(13)} ${esc(meta.rating)} IMDb</span>` : ''}
       </div>
-      ${meta.genres && meta.genres.length ? `
-      <div class="hero-genres">
-        ${meta.genres.map(g=>`<span class="hero-genre-tag">${esc(g)}</span>`).join('')}
-      </div>` : ''}
+      ${meta.genres && meta.genres.length ? `<div class="hero-genres">${meta.genres.map(g=>`<span class="hero-genre-tag">${esc(g)}</span>`).join('')}</div>` : ''}
       <p class="hero-plot">${esc(meta.plot||'')}</p>
       <div class="hero-actions">
         <button class="btn-hero-primary" onclick="openModal('${titleKey}')">
@@ -235,6 +246,20 @@ function renderHero(index) {
     <div class="hero-scroll-hint" aria-hidden="true">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
     </div>`;
+
+  // Probe for backdrop — upgrade when resolved
+  loadBackdrop(title, (src, isBackdrop) => {
+    const bgEl = document.getElementById('hero-bg');
+    if (!bgEl || State.heroIndex !== index) return; // hero already rotated
+    bgEl.src = src;
+    if (isBackdrop) {
+      // Real widescreen backdrop — no blur, fill naturally
+      bgEl.classList.remove('is-poster-fallback');
+    } else {
+      // Poster used as bg — keep blur class
+      bgEl.classList.add('is-poster-fallback');
+    }
+  });
 }
 
 function toggleHeroWL(title) {
@@ -245,14 +270,11 @@ function toggleHeroWL(title) {
 
 function startHeroRotation() {
   clearInterval(heroTimer);
-  heroTimer = setInterval(() => {
-    const next = (State.heroIndex + 1) % HERO_TITLES.length;
-    renderHero(next);
-  }, 8000);
+  heroTimer = setInterval(() => renderHero((State.heroIndex + 1) % HERO_TITLES.length), 8000);
 }
 
 /* ═══════════════════════════════════════════════════
-   HOME PAGE ROWS
+   HOME ROWS
 ═══════════════════════════════════════════════════ */
 function renderHome() {
   const container = document.getElementById('home-rows');
@@ -261,7 +283,6 @@ function renderHome() {
 
   let html = '';
 
-  // Watchlist row (dynamic, skip if empty – will be rebuilt on watchlist changes)
   html += `<div class="content-section" id="wl-row-section" style="display:none">
     <div class="section-header">
       <div class="section-title-wrap">
@@ -274,8 +295,7 @@ function renderHome() {
   </div>
   <div class="section-divider" id="wl-divider" style="display:none"></div>`;
 
-  // Phase rows
-  window.PHASES.forEach((phase, pi) => {
+  window.PHASES.forEach(phase => {
     html += `
     <div class="content-section" id="section-${phase.id}">
       <div class="section-header">
@@ -285,34 +305,28 @@ function renderHome() {
           <span class="section-count">${phase.titles.length}</span>
         </div>
       </div>
-      <div class="poster-row">
-        ${phase.titles.map(t => buildCard(t)).join('')}
-      </div>
+      <div class="poster-row">${phase.titles.map(t => buildCard(t)).join('')}</div>
     </div>
     <div class="section-divider"></div>`;
   });
 
-  // Series row
   const seriesTitles = window.ALL_TITLES.filter(t => {
     const m = window.META[t];
-    return m && (m.type === 'Series' || m.type === 'Animated Series' || m.type === 'Special Presentation');
+    return m && ['Series','Animated Series','Special Presentation'].includes(m.type);
   });
   html += `
   <div class="content-section" id="section-series">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-phase-dot" style="background:#3dbdd9"></div>
-        <span class="section-title">Marvel Series & Specials</span>
+        <span class="section-title">Marvel Series &amp; Specials</span>
         <span class="section-count">${seriesTitles.length}</span>
       </div>
     </div>
-    <div class="poster-row">
-      ${seriesTitles.map(t => buildCard(t)).join('')}
-    </div>
+    <div class="poster-row">${seriesTitles.map(t => buildCard(t)).join('')}</div>
   </div>
   <div class="section-divider"></div>`;
 
-  // X-Men row
   html += `
   <div class="content-section" id="section-xmen">
     <div class="section-header">
@@ -323,13 +337,10 @@ function renderHome() {
       </div>
       <button class="section-see-all" onclick="showPage('xmen')">See All →</button>
     </div>
-    <div class="poster-row">
-      ${window.XMEN_TITLES.map(t => buildCard(t)).join('')}
-    </div>
+    <div class="poster-row">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
   </div>
   <div class="section-divider"></div>`;
 
-  // Deadpool row
   html += `
   <div class="content-section" id="section-deadpool">
     <div class="section-header">
@@ -339,18 +350,13 @@ function renderHome() {
         <span class="section-count">${window.DEADPOOL_TITLES.length}</span>
       </div>
     </div>
-    <div class="poster-row">
-      ${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}
-    </div>
+    <div class="poster-row">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
   </div>`;
 
   container.innerHTML = html;
 
-  // Intersection observer for fade-in
   const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
-    });
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
   }, { threshold: 0.06 });
   container.querySelectorAll('.content-section').forEach(s => io.observe(s));
 }
@@ -358,9 +364,8 @@ function renderHome() {
 function updateHomeWatchlistRow() {
   const section = document.getElementById('wl-row-section');
   const divider = document.getElementById('wl-divider');
-  const row = document.getElementById('home-wl-row');
+  const row     = document.getElementById('home-wl-row');
   if (!section || !row) return;
-
   if (State.watchlist.length === 0) {
     section.style.display = 'none';
     if (divider) divider.style.display = 'none';
@@ -373,78 +378,60 @@ function updateHomeWatchlistRow() {
 }
 
 /* ═══════════════════════════════════════════════════
-   SEARCH PAGE
+   SEARCH
 ═══════════════════════════════════════════════════ */
 let searchDebounce = null;
 
 function renderSearch(query, filter) {
   const q = (query || '').trim().toLowerCase();
-  State.searchQuery = q;
+  State.searchQuery  = q;
   State.searchFilter = filter || 'all';
-
   const input = document.getElementById('nav-search');
-  if (input && input.value !== query) input.value = query || '';
-
-  document.getElementById('search-page-heading').textContent =
-    q ? `Results for "${query}"` : 'Browse All Titles';
+  if (input && input.value !== (query||'')) input.value = query || '';
+  document.getElementById('search-page-heading').textContent = q ? `Results for "${query}"` : 'Browse All Titles';
 
   let results = [...window.ALL_TITLES];
-
-  // filter by type
   if (State.searchFilter !== 'all') {
     results = results.filter(t => {
-      const m = window.META[t];
-      if (!m) return false;
-      if (State.searchFilter === 'movie') return m.type === 'Movie';
-      if (State.searchFilter === 'series') return m.type === 'Series';
+      const m = window.META[t]; if (!m) return false;
+      if (State.searchFilter === 'movie')    return m.type === 'Movie';
+      if (State.searchFilter === 'series')   return m.type === 'Series';
       if (State.searchFilter === 'animated') return m.type === 'Animated Series';
-      if (State.searchFilter === 'special') return m.type === 'Special Presentation';
+      if (State.searchFilter === 'special')  return m.type === 'Special Presentation';
       return true;
     });
   }
-
-  // filter by query
   if (q) {
     results = results.filter(t => {
       const m = window.META[t] || {};
-      return (
-        t.toLowerCase().includes(q) ||
-        (m.cast || '').toLowerCase().includes(q) ||
-        (m.director || '').toLowerCase().includes(q) ||
-        (m.genres || []).join(' ').toLowerCase().includes(q) ||
-        (m.plot || '').toLowerCase().includes(q) ||
-        (m.phase || '').toLowerCase().includes(q)
-      );
+      return t.toLowerCase().includes(q) ||
+        (m.cast||'').toLowerCase().includes(q) ||
+        (m.director||'').toLowerCase().includes(q) ||
+        (m.genres||[]).join(' ').toLowerCase().includes(q) ||
+        (m.plot||'').toLowerCase().includes(q) ||
+        (m.phase||'').toLowerCase().includes(q);
     });
   }
 
-  const grid = document.getElementById('search-grid');
-  const empty = document.getElementById('search-empty');
+  const grid    = document.getElementById('search-grid');
+  const empty   = document.getElementById('search-empty');
   const countEl = document.getElementById('search-result-count');
   if (countEl) countEl.textContent = `${results.length} title${results.length !== 1 ? 's' : ''}`;
-
-  if (results.length === 0) {
-    grid.innerHTML = '';
-    empty.style.display = 'block';
-  } else {
-    grid.innerHTML = results.map(t => buildCard(t)).join('');
-    empty.style.display = 'none';
-  }
+  if (results.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; }
+  else { grid.innerHTML = results.map(t => buildCard(t)).join(''); empty.style.display = 'none'; }
 }
 
 /* ═══════════════════════════════════════════════════
-   PHASES PAGE
+   PHASES & X-MEN & WATCHLIST PAGES
 ═══════════════════════════════════════════════════ */
 function renderPhasesPage() {
   const container = document.getElementById('phases-content');
   if (container._rendered) return;
   container._rendered = true;
-
   let html = '';
   window.PHASES.forEach((phase, i) => {
     const movies = phase.titles.filter(t => window.META[t]?.type === 'Movie').length;
     const series = phase.titles.filter(t => ['Series','Animated Series','Special Presentation'].includes(window.META[t]?.type)).length;
-
     html += `
     <div class="phase-block">
       <div class="phase-block-header">
@@ -454,150 +441,121 @@ function renderPhasesPage() {
           <div class="phase-block-count">${movies} Movie${movies!==1?'s':''} · ${series} Series/Special${series!==1?'s':''}</div>
         </div>
       </div>
-      <div class="phase-grid">
-        ${phase.titles.map(t => buildCard(t)).join('')}
-      </div>
+      <div class="phase-grid">${phase.titles.map(t => buildCard(t)).join('')}</div>
     </div>`;
   });
   container.innerHTML = html;
 }
 
-/* ═══════════════════════════════════════════════════
-   XMEN PAGE
-═══════════════════════════════════════════════════ */
 function renderXmenPage() {
   const container = document.getElementById('xmen-content');
   if (container._rendered) return;
   container._rendered = true;
   container.innerHTML = `
-    <div class="phase-grid" style="margin-bottom:32px">
-      ${window.XMEN_TITLES.map(t => buildCard(t)).join('')}
-    </div>
-    <div style="margin-top:16px; padding-top:24px; border-top:1px solid var(--border)">
+    <div class="phase-grid" style="margin-bottom:32px">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
+    <div style="margin-top:16px;padding-top:24px;border-top:1px solid var(--border)">
       <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-2)">DEADPOOL COLLECTION</div>
-      <div class="phase-grid">
-        ${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}
-      </div>
+      <div class="phase-grid">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
     </div>`;
 }
 
-/* ═══════════════════════════════════════════════════
-   WATCHLIST PAGE
-═══════════════════════════════════════════════════ */
 function renderWatchlistPage() {
   const container = document.getElementById('watchlist-content');
-  const empty = document.getElementById('watchlist-empty');
-
-  if (State.watchlist.length === 0) {
-    container.innerHTML = '';
-    empty.style.display = 'block';
-  } else {
-    empty.style.display = 'none';
-    container.innerHTML = `<div class="search-results-grid">${State.watchlist.map(t => buildCard(t)).join('')}</div>`;
-  }
+  const empty     = document.getElementById('watchlist-empty');
+  if (State.watchlist.length === 0) { container.innerHTML = ''; empty.style.display = 'block'; }
+  else { empty.style.display = 'none'; container.innerHTML = `<div class="search-results-grid">${State.watchlist.map(t => buildCard(t)).join('')}</div>`; }
 }
 
 /* ═══════════════════════════════════════════════════
    PAGE NAVIGATION
 ═══════════════════════════════════════════════════ */
 function showPage(name) {
-  // Hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-
-  // Deactivate all nav links + bnav buttons
   document.querySelectorAll('.nav-links li a, .nav-links li button').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-
   State.currentPage = name;
-
   const pageEl = document.getElementById(name + '-page');
-  if (pageEl) {
-    pageEl.classList.add('active', 'page-enter');
-    setTimeout(() => pageEl.classList.remove('page-enter'), 400);
-  }
-
-  // Activate nav links
-  const navMap = { home: 'nav-home', phases: 'nav-phases', xmen: 'nav-xmen', watchlist: 'nav-watchlist', search: 'nav-search-link' };
+  if (pageEl) { pageEl.classList.add('active','page-enter'); setTimeout(() => pageEl.classList.remove('page-enter'), 400); }
+  const navMap = { home:'nav-home', phases:'nav-phases', xmen:'nav-xmen', watchlist:'nav-watchlist' };
   if (navMap[name]) document.getElementById(navMap[name])?.classList.add('active');
-
-  // Activate bnav
-  const bnavBtn = document.querySelector(`.bnav-btn[data-page="${name}"]`);
-  if (bnavBtn) bnavBtn.classList.add('active');
-
-  // Render pages on demand
-  if (name === 'home') { renderHome(); renderHero(State.heroIndex); updateHomeWatchlistRow(); }
-  if (name === 'phases') renderPhasesPage();
-  if (name === 'xmen') renderXmenPage();
+  document.querySelector(`.bnav-btn[data-page="${name}"]`)?.classList.add('active');
+  if (name === 'home')      { renderHome(); renderHero(State.heroIndex); updateHomeWatchlistRow(); }
+  if (name === 'phases')    renderPhasesPage();
+  if (name === 'xmen')      renderXmenPage();
   if (name === 'watchlist') renderWatchlistPage();
-  if (name === 'search') renderSearch(State.searchQuery, State.searchFilter);
-
-  // Focus search input when navigating to search
-  if (name === 'search') {
-    setTimeout(() => document.getElementById('nav-search')?.focus(), 100);
-  }
-
+  if (name === 'search')    { renderSearch(State.searchQuery, State.searchFilter); setTimeout(() => document.getElementById('nav-search')?.focus(), 100); }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ═══════════════════════════════════════════════════
    MODAL
+   ─────────────────────────────────────────────────
+   Same two-step pattern as hero:
+   Step 1 → render instantly with poster as art bg
+            + add is-poster-fallback class (blur).
+   Step 2 → loadBackdrop() probe in background.
+   Step 3 → on resolve:
+     • backdrop found → swap src, remove blur class
+     • no backdrop    → keep poster, keep blur class
 ═══════════════════════════════════════════════════ */
 let currentModalTitle = null;
 
 function openModal(titleKey) {
-  const title = decodeURIComponent(titleKey);
-  currentModalTitle = title;
-  const meta = window.META[title] || {};
-  const downloads = window.DOWNLOADS[title] || [];
-  const poster = window.posterPath(title);
+  const title        = decodeURIComponent(titleKey);
+  currentModalTitle  = title;
+  const meta         = window.META[title] || {};
+  const downloads    = window.DOWNLOADS[title] || [];
+  const poster       = window.posterPath(title);
   const displayTitle = title.replace(/\s*\(\d{4}\)$/, '');
-  const inList = State.inWatchlist(title);
+  const inList       = State.inWatchlist(title);
 
-  // Build downloads HTML
+  // ── Downloads ──
   let dlHTML = '';
   if (downloads.length === 0) {
     dlHTML = `<p style="font-size:13px;color:var(--text-3)">No download links available.</p>`;
   } else if (downloads.length === 1 && downloads[0].q === 'Download') {
     dlHTML = `<a class="tg-dl-btn-large" href="${esc(downloads[0].url)}" target="_blank" rel="noopener noreferrer">${telegramSVG(18)} Download on Telegram</a>`;
   } else {
-    dlHTML = `<div class="downloads-grid">
-      ${downloads.map(d => `
+    dlHTML = `<div class="downloads-grid">${downloads.map(d => `
         <div class="download-item">
           <div class="download-item-info">
             <div class="download-quality">${esc(d.q)}</div>
-            ${d.audio ? `<div class="download-audio"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>${esc(d.audio)}</div>` : ''}
+            ${d.audio ? `<div class="download-audio"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> ${esc(d.audio)}</div>` : ''}
           </div>
           <a class="tg-dl-btn" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${telegramSVG(13)} Get</a>
-        </div>`).join('')}
-    </div>`;
+        </div>`).join('')}</div>`;
   }
 
-  // Build details grid
+  // ── Details ──
   let detailsHTML = '';
   if (meta.director) detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">Director / Creator</div><div class="modal-detail-value">${esc(meta.director)}</div></div>`;
-  if (meta.cast) detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">Cast</div><div class="modal-detail-value">${esc(meta.cast)}</div></div>`;
-  if (meta.phase) detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">MCU Phase</div><div class="modal-detail-value">${esc(meta.phase)}</div></div>`;
-  if (meta.type) detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">Format</div><div class="modal-detail-value">${esc(meta.type)}</div></div>`;
+  if (meta.cast)     detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">Cast</div><div class="modal-detail-value">${esc(meta.cast)}</div></div>`;
+  if (meta.phase)    detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">MCU Phase</div><div class="modal-detail-value">${esc(meta.phase)}</div></div>`;
+  if (meta.type)     detailsHTML += `<div class="modal-detail-item"><div class="modal-detail-label">Format</div><div class="modal-detail-value">${esc(meta.type)}</div></div>`;
 
+  // Render immediately — poster as art bg (blurred fallback style)
   document.getElementById('modal').innerHTML = `
     <div class="modal-art">
-      <img class="modal-art-img" src="${esc(poster)}" alt="" onerror="this.src='posters/placeholder.png'" loading="lazy">
+      <img class="modal-art-img is-poster-fallback" id="modal-art-bg"
+           src="${esc(poster)}" alt=""
+           onerror="this.src='posters/placeholder.png'" loading="lazy">
       <div class="modal-art-gradient"></div>
       <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-top">
         <div class="modal-poster">
-          <img src="${esc(poster)}" alt="${esc(displayTitle)}" onerror="this.src='posters/placeholder.png'" loading="lazy">
+          <img src="${esc(poster)}" alt="${esc(displayTitle)}"
+               onerror="this.src='posters/placeholder.png'" loading="lazy">
         </div>
         <div class="modal-info">
           <div class="modal-type-label">${esc(meta.type || 'Movie')}</div>
           <h2 class="modal-title">${esc(displayTitle)}</h2>
           <div class="modal-meta-pills">
-            ${meta.year ? `<span class="meta-pill">${esc(meta.year)}</span>` : ''}
+            ${meta.year    ? `<span class="meta-pill">${esc(meta.year)}</span>` : ''}
             ${meta.runtime ? `<span class="meta-pill">${esc(meta.runtime)}</span>` : ''}
-            ${meta.rating ? `<span class="meta-pill meta-pill-rating">${starSVG(12)} ${esc(meta.rating)} IMDb</span>` : ''}
-            ${meta.phase ? `<span class="meta-pill">${esc(meta.phase)}</span>` : ''}
+            ${meta.rating  ? `<span class="meta-pill meta-pill-rating">${starSVG(12)} ${esc(meta.rating)} IMDb</span>` : ''}
+            ${meta.phase   ? `<span class="meta-pill">${esc(meta.phase)}</span>` : ''}
           </div>
           ${meta.genres && meta.genres.length ? `<div class="modal-genres">${meta.genres.map(g=>`<span class="modal-genre-tag">${esc(g)}</span>`).join('')}</div>` : ''}
           <div class="modal-actions">
@@ -609,29 +567,23 @@ function openModal(titleKey) {
           </div>
         </div>
       </div>
-
-      ${meta.plot ? `
-      <div class="modal-section">
-        <div class="modal-section-title">Synopsis</div>
-        <p class="modal-plot-text">${esc(meta.plot)}</p>
-      </div>` : ''}
-
-      ${detailsHTML ? `
-      <div class="modal-section">
-        <div class="modal-section-title">Details</div>
-        <div class="modal-details-grid">${detailsHTML}</div>
-      </div>` : ''}
-
+      ${meta.plot ? `<div class="modal-section"><div class="modal-section-title">Synopsis</div><p class="modal-plot-text">${esc(meta.plot)}</p></div>` : ''}
+      ${detailsHTML ? `<div class="modal-section"><div class="modal-section-title">Details</div><div class="modal-details-grid">${detailsHTML}</div></div>` : ''}
       <div class="modal-divider"></div>
-
-      <div class="modal-section">
-        <div class="modal-section-title">Download via Telegram</div>
-        ${dlHTML}
-      </div>
+      <div class="modal-section"><div class="modal-section-title">Download via Telegram</div>${dlHTML}</div>
     </div>`;
 
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Probe — upgrade art bg when resolved
+  loadBackdrop(title, (src, isBackdrop) => {
+    const artEl = document.getElementById('modal-art-bg');
+    if (!artEl || currentModalTitle !== title) return;
+    artEl.src = src;
+    if (isBackdrop) artEl.classList.remove('is-poster-fallback');
+    else            artEl.classList.add('is-poster-fallback');
+  });
 }
 
 function closeModal() {
@@ -647,18 +599,11 @@ function toggleModalWL(title) {
   updateHomeWatchlistRow();
 }
 
-/* ═══════════════════════════════════════════════════
-   NAV SCROLL EFFECT
-═══════════════════════════════════════════════════ */
+/* ─── NAV / SEARCH ─── */
 function handleNavScroll() {
-  const nav = document.getElementById('topnav');
-  if (window.scrollY > 40) nav.classList.add('scrolled');
-  else nav.classList.remove('scrolled');
+  document.getElementById('topnav').classList.toggle('scrolled', window.scrollY > 40);
 }
 
-/* ═══════════════════════════════════════════════════
-   SEARCH HANDLER
-═══════════════════════════════════════════════════ */
 function handleSearchInput(value) {
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => {
@@ -669,9 +614,7 @@ function handleSearchInput(value) {
 
 function setSearchFilter(filter) {
   State.searchFilter = filter;
-  document.querySelectorAll('.filter-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.filter === filter);
-  });
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.filter === filter));
   renderSearch(State.searchQuery, filter);
 }
 
@@ -684,43 +627,22 @@ function clearWatchlist() {
   showToast('Watchlist cleared', '✕');
 }
 
-/* ═══════════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════════ */
+/* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded', () => {
-  // Render hero immediately
   renderHero(0);
   startHeroRotation();
-
-  // Render home rows
   renderHome();
   updateHomeWatchlistRow();
-
-  // Nav scroll listener
   window.addEventListener('scroll', handleNavScroll, { passive: true });
-
-  // Close modal on overlay click
   document.getElementById('modal-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
-
-  // Escape key closes modal
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
-
-  // Search input handler
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   const searchInput = document.getElementById('nav-search');
   if (searchInput) {
     searchInput.addEventListener('input', e => handleSearchInput(e.target.value));
-    searchInput.addEventListener('focus', () => {
-      if (State.currentPage !== 'search') showPage('search');
-    });
+    searchInput.addEventListener('focus', () => { if (State.currentPage !== 'search') showPage('search'); });
   }
-
-  // Refresh watchlist UI on init
   refreshAllWLUI();
-
-  // Show home
   showPage('home');
 });
