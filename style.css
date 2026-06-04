@@ -191,10 +191,18 @@ body {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
+  object-position: center center;
+  opacity: 0.55;              /* backdrop: brighter, fills screen naturally */
+  transform: scale(1.0);
+  filter: none;
+  transition: opacity 0.7s ease, filter 0.7s ease, transform 0.7s ease;
+}
+/* Poster used as fallback bg — blur + darken + zoom so it looks cinematic */
+.hero-bg-img.is-poster-fallback {
+  opacity: 0.35;
+  transform: scale(1.12);
+  filter: blur(18px) saturate(1.2);
   object-position: center top;
-  opacity: 0.28;
-  transform: scale(1.05);
-  transition: opacity 0.8s ease;
 }
 
 .hero-overlay {
@@ -505,7 +513,7 @@ body {
 }
 .card:hover .card-wl-btn { opacity: 1; }
 .card-wl-btn:hover { background: rgba(232,25,44,0.8); transform: scale(1.1); }
-.card-wl-btn.in-list { opacity: 1; background: rgba(22,25,44,0.9); }
+.card-wl-btn.in-list { opacity: 1; background: rgba(23,25,44,0); }
 .card-wl-btn svg { width: 14px; height: 14px; }
 
 /* card overlay on hover */
@@ -760,8 +768,17 @@ body {
 .modal-art-img {
   width: 100%; height: 100%;
   object-fit: cover;
-  opacity: 0.35;
+  opacity: 0.55;              /* backdrop: clear, cinematic */
   display: block;
+  filter: none;
+  transform: scale(1.0);
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+/* Poster used as fallback — blur so it reads as atmosphere not a thumbnail */
+.modal-art-img.is-poster-fallback {
+  opacity: 0.30;
+  filter: blur(22px) saturate(1.1);
+  transform: scale(1.15);
 }
 .modal-art-gradient {
   position: absolute; inset: 0;
