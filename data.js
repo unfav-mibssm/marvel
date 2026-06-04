@@ -22,6 +22,13 @@ window.posterPath = function(title) {
   return 'posters/' + s + '.png';
 };
 
+// Same slug as posterPath — lives in /backdrops, uses .jpg extension
+window.backdropPath = function(title) {
+  return window.posterPath(title)
+    .replace(/^posters\//, 'backdrops/')
+    .replace(/\.png$/, '.jpg');
+};
+
 window.META = {
   "Iron Man (2008)":{"type":"Movie","phase":"Phase 1","year":"2008","runtime":"2h 6m","rating":"7.9","genres":["Action","Adventure","Sci-Fi"],"plot":"Billionaire genius Tony Stark builds a powered suit of armor to escape captivity, then becomes Iron Man, a high-tech superhero determined to protect the world.","cast":"Robert Downey Jr., Gwyneth Paltrow, Jeff Bridges, Terrence Howard","director":"Jon Favreau"},
   "The Incredible Hulk (2008)":{"type":"Movie","phase":"Phase 1","year":"2008","runtime":"1h 52m","rating":"6.7","genres":["Action","Adventure","Sci-Fi"],"plot":"Bruce Banner, a scientist on the run from the U.S. Government, must find a cure for the monster he turns into, while an adversary sends the Abomination to destroy him.","cast":"Edward Norton, Liv Tyler, Tim Roth, William Hurt","director":"Louis Leterrier"},
