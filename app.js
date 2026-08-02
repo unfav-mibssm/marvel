@@ -351,6 +351,19 @@ function renderHome() {
       </div>
     </div>
     <div class="poster-row">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
+  </div>
+  <div class="section-divider"></div>`;
+
+  html += `
+  <div class="content-section" id="section-netflix-saga">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-phase-dot" style="background:#8b0000"></div>
+        <span class="section-title">Netflix Defenders Saga</span>
+        <span class="section-count">${window.NETFLIX_SAGA_TITLES.length}</span>
+      </div>
+    </div>
+    <div class="poster-row">${window.NETFLIX_SAGA_TITLES.map(t => buildCard(t)).join('')}</div>
   </div>`;
 
   container.innerHTML = html;
