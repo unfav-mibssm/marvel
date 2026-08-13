@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080b0f">
-  <title>MarvelVault — MCU & X-Men Collection</title>
-  <meta name="description" content="Browse and download the complete Marvel Cinematic Universe and X-Men film collection.">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Marvel Vault — Marvel Collection</title>
+  <meta name="description" content="Browse and download the complete Marvel Cinematic Universe, X-Men, Spider-Man, and Netflix Defenders collection.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,13 +15,13 @@
 ════════════════════════════════════════════════ -->
 <nav id="topnav">
   <div class="nav-logo no-select" onclick="showPage('home')">
-    MARVEL<span>VAULT</span>
+    MARVEL<span></span>
   </div>
 
   <ul class="nav-links">
-    <li><a href="#" id="nav-home"    onclick="event.preventDefault();showPage('home')"      class="active">Home</a></li>
-    <li><a href="#" id="nav-phases"  onclick="event.preventDefault();showPage('phases')">Phases</a></li>
-    <li><a href="#" id="nav-xmen"    onclick="event.preventDefault();showPage('xmen')">X-Men</a></li>
+    <li><a href="#" id="nav-home"      onclick="event.preventDefault();showPage('home')"      class="active">Home</a></li>
+    <li><a href="#" id="nav-phases"    onclick="event.preventDefault();showPage('phases')">Phases</a></li>
+    <li><a href="#" id="nav-xmen"      onclick="event.preventDefault();showPage('xmen')">X-Men</a></li>
     <li><a href="#" id="nav-watchlist" onclick="event.preventDefault();showPage('watchlist')">Watchlist</a></li>
   </ul>
 
@@ -33,7 +33,7 @@
       <input id="nav-search" type="search" placeholder="Search titles, cast…" autocomplete="off" spellcheck="false">
     </div>
 
-    <button class="watchlist-nav-btn" onclick="showPage('watchlist')">
+    <button class="watchlist-nav-btn" onclick="showPage('watchlist')" style="display:flex;align-items:center;gap:6px;background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;color:var(--text-muted);font-size:12px;font-weight:500;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
@@ -47,9 +47,7 @@
      HOME PAGE
 ════════════════════════════════════════════════ -->
 <div id="home-page" class="page active">
-  <!-- Hero Banner -->
   <div id="hero"></div>
-  <!-- Content Rows -->
   <div id="home-rows"></div>
 </div>
 
@@ -59,9 +57,7 @@
 <div id="search-page" class="page">
   <div class="search-page-header">
     <h1 class="search-page-title" id="search-page-heading">Browse All Titles</h1>
-    <p class="search-page-sub">
-      <span id="search-result-count"></span>
-    </p>
+    <p class="search-page-sub"><span id="search-result-count"></span></p>
   </div>
 
   <div class="search-filters">
@@ -97,7 +93,7 @@
 ════════════════════════════════════════════════ -->
 <div id="xmen-page" class="page">
   <h1 class="xmen-page-title">X-Men Universe</h1>
-  <p class="xmen-page-sub">The complete X-Men franchise including Deadpool</p>
+  <p class="xmen-page-sub">The complete X-Men franchise, Deadpool, and Spider-Man across generations</p>
   <div id="xmen-content"></div>
 </div>
 
