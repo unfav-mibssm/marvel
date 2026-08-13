@@ -39,8 +39,29 @@ const HERO_TITLES = [
   "Captain America: Civil War (2016)",
   "Logan (2017)",
   "Deadpool & Wolverine (2024)",
-  "Loki season 2 (2023)"
+  "Loki season 2 (2023)",
+  "Spider-Man: Across the Spider-Verse (2023)",
+  "Spider-Man 2 (2004)",
+  "The Amazing Spider-Man (2012)",
+  "Daredevil: Born Again S01 (2025)",
+  "X-Men: Days of Future Past (2014)",
+  "Doctor Strange in the Multiverse of Madness (2022)",
 ];
+
+// Fisher-Yates shuffle — returns a new array, doesn't mutate the original
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Randomized order for this page load — shuffled once on init,
+// so the hero rotates through all titles in a random (non-repeating)
+// sequence rather than the same fixed order every time.
+let HERO_ORDER = shuffleArray(HERO_TITLES.map((_, i) => i));
 
 /* ═══════════════════════════════════════════════════
    BACKDROP LOADER
@@ -118,7 +139,7 @@ function buildCard(title) {
   return `
   <div class="card" data-title="${esc(title)}" onclick="openModal('${titleKey}')">
     <div class="card-poster-wrap">
-      <img src="${esc(poster)}" alt="${esc(displayTitle)}" loading="lazy"
+      <img src="${esc(poster)}" alt="${esc(displayTitle)}" loading="lazy" decoding="async" fetchpriority="low"
            onerror="this.src='posters/placeholder.png'" class="loading"
            onload="this.classList.remove('loading')">
       ${getTypeBadge(type)}
@@ -146,7 +167,7 @@ function buildCard(title) {
 function toggleWLFromCard(event, title) {
   event.stopPropagation();
   const added = State.toggleWatchlist(title);
-  showToast(added ? 'Added to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
+  showToast(added ? 'Saved to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
   refreshAllWLUI();
 }
 
@@ -164,7 +185,7 @@ function refreshAllWLUI() {
 
   const heroWL = document.querySelector('.btn-hero-watchlist');
   if (heroWL) {
-    const inList = State.inWatchlist(HERO_TITLES[State.heroIndex]);
+    const inList = State.inWatchlist(HERO_TITLES[HERO_ORDER[State.heroIndex]]);
     heroWL.className = `btn-hero-watchlist ${inList ? 'in-list' : ''}`;
     heroWL.innerHTML = `<span class="plus">${plusSVG()}</span><span class="check">${checkSVG()}</span>${inList ? 'In Watchlist' : 'Add to Watchlist'}`;
   }
@@ -201,9 +222,9 @@ function refreshAllWLUI() {
 ═══════════════════════════════════════════════════ */
 let heroTimer = null;
 
-function renderHero(index) {
-  State.heroIndex   = index;
-  const title       = HERO_TITLES[index];
+function renderHero(position) {
+  State.heroIndex   = position;                       // position within HERO_ORDER
+  const title       = HERO_TITLES[HERO_ORDER[position]];
   const meta        = window.META[title] || {};
   const poster      = window.posterPath(title);
   const inList      = State.inWatchlist(title);
@@ -234,7 +255,7 @@ function renderHero(index) {
       <div class="hero-actions">
         <button class="btn-hero-primary" onclick="openModal('${titleKey}')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          More Details
+          View Details
         </button>
         <button class="btn-hero-watchlist ${inList?'in-list':''}" onclick="toggleHeroWL('${esc(title)}')">
           <span class="plus">${plusSVG()}</span>
@@ -250,7 +271,7 @@ function renderHero(index) {
   // Probe for backdrop — upgrade when resolved
   loadBackdrop(title, (src, isBackdrop) => {
     const bgEl = document.getElementById('hero-bg');
-    if (!bgEl || State.heroIndex !== index) return; // hero already rotated
+    if (!bgEl || State.heroIndex !== position) return; // hero already rotated
     bgEl.src = src;
     if (isBackdrop) {
       // Real widescreen backdrop — no blur, fill naturally
@@ -264,13 +285,21 @@ function renderHero(index) {
 
 function toggleHeroWL(title) {
   const added = State.toggleWatchlist(title);
-  showToast(added ? 'Added to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
+  showToast(added ? 'Saved to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
   refreshAllWLUI();
 }
 
 function startHeroRotation() {
   clearInterval(heroTimer);
-  heroTimer = setInterval(() => renderHero((State.heroIndex + 1) % HERO_TITLES.length), 8000);
+  heroTimer = setInterval(() => {
+    let next = State.heroIndex + 1;
+    if (next >= HERO_ORDER.length) {
+      // Completed a full cycle — reshuffle so the next lap is a fresh random order
+      HERO_ORDER = shuffleArray(HERO_TITLES.map((_, i) => i));
+      next = 0;
+    }
+    renderHero(next);
+  }, 8000);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -338,6 +367,19 @@ function renderHome() {
       <button class="section-see-all" onclick="showPage('xmen')">See All →</button>
     </div>
     <div class="poster-row">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
+  </div>
+  <div class="section-divider"></div>`;
+
+  html += `
+  <div class="content-section" id="section-spiderman">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-phase-dot" style="background:#e01818"></div>
+        <span class="section-title">Spider-Man — Every Era</span>
+        <span class="section-count">${window.SPIDERMAN_TITLES.length}</span>
+      </div>
+    </div>
+    <div class="poster-row">${window.SPIDERMAN_TITLES.map(t => buildCard(t)).join('')}</div>
   </div>
   <div class="section-divider"></div>`;
 
@@ -466,9 +508,13 @@ function renderXmenPage() {
   container._rendered = true;
   container.innerHTML = `
     <div class="phase-grid" style="margin-bottom:32px">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
-    <div style="margin-top:16px;padding-top:24px;border-top:1px solid var(--border)">
-      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-2)">DEADPOOL COLLECTION</div>
+    <div style="margin-top:16px;padding-top:24px;border-top:1px solid var(--glass-border)">
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-muted)">DEADPOOL COLLECTION</div>
       <div class="phase-grid">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
+    </div>
+    <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--glass-border)">
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-muted)">SPIDER-MAN — EVERY ERA</div>
+      <div class="phase-grid">${window.SPIDERMAN_TITLES.map(t => buildCard(t)).join('')}</div>
     </div>`;
 }
 
@@ -525,7 +571,7 @@ function openModal(titleKey) {
   // ── Downloads ──
   let dlHTML = '';
   if (downloads.length === 0) {
-    dlHTML = `<p style="font-size:13px;color:var(--text-3)">No download links available.</p>`;
+    dlHTML = `<p style="font-size:13px;color:var(--text-dim)">No download links available.</p>`;
   } else if (downloads.length === 1 && downloads[0].q === 'Download') {
     dlHTML = `<a class="tg-dl-btn-large" href="${esc(downloads[0].url)}" target="_blank" rel="noopener noreferrer">${telegramSVG(18)} Download on Telegram</a>`;
   } else {
@@ -551,7 +597,7 @@ function openModal(titleKey) {
     <div class="modal-art">
       <img class="modal-art-img is-poster-fallback" id="modal-art-bg"
            src="${esc(poster)}" alt=""
-           onerror="this.src='posters/placeholder.png'" loading="lazy">
+           onerror="this.src='posters/placeholder.png'" loading="lazy" decoding="async">
       <div class="modal-art-gradient"></div>
       <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">✕</button>
     </div>
@@ -559,7 +605,7 @@ function openModal(titleKey) {
       <div class="modal-top">
         <div class="modal-poster">
           <img src="${esc(poster)}" alt="${esc(displayTitle)}"
-               onerror="this.src='posters/placeholder.png'" loading="lazy">
+               onerror="this.src='posters/placeholder.png'" loading="lazy" decoding="async">
         </div>
         <div class="modal-info">
           <div class="modal-type-label">${esc(meta.type || 'Movie')}</div>
@@ -607,7 +653,7 @@ function closeModal() {
 
 function toggleModalWL(title) {
   const added = State.toggleWatchlist(title);
-  showToast(added ? 'Added to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
+  showToast(added ? 'Saved to Watchlist' : 'Removed from Watchlist', added ? '♥' : '✕');
   refreshAllWLUI();
   updateHomeWatchlistRow();
 }
@@ -642,7 +688,8 @@ function clearWatchlist() {
 
 /* ─── INIT ─── */
 document.addEventListener('DOMContentLoaded', () => {
-  renderHero(0);
+  // Start on a random title (not always the same one) every time the page loads
+  renderHero(Math.floor(Math.random() * HERO_ORDER.length));
   startHeroRotation();
   renderHome();
   updateHomeWatchlistRow();
