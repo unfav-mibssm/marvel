@@ -28,25 +28,8 @@ const State = {
   }
 };
 
-/* ─── HERO TITLES ─── */
-const HERO_TITLES = [
-  "Avengers: Endgame (2019)",
-  "Avengers: Infinity War (2018)",
-  "Spider-Man: No Way Home (2021)",
-  "Thor: Ragnarok (2017)",
-  "Black Panther (2018)",
-  "Guardians of the Galaxy (2014)",
-  "Captain America: Civil War (2016)",
-  "Logan (2017)",
-  "Deadpool & Wolverine (2024)",
-  "Loki season 2 (2023)",
-  "Spider-Man: Across the Spider-Verse (2023)",
-  "Spider-Man 2 (2004)",
-  "The Amazing Spider-Man (2012)",
-  "Daredevil: Born Again S01 (2025)",
-  "X-Men: Days of Future Past (2014)",
-  "Doctor Strange in the Multiverse of Madness (2022)",
-];
+/* ─── HERO TITLES — filled from the sheet (posts with Banner = Yes) ─── */
+let HERO_TITLES = [];
 
 // Fisher-Yates shuffle — returns a new array, doesn't mutate the original
 function shuffleArray(arr) {
@@ -58,10 +41,7 @@ function shuffleArray(arr) {
   return a;
 }
 
-// Randomized order for this page load — shuffled once on init,
-// so the hero rotates through all titles in a random (non-repeating)
-// sequence rather than the same fixed order every time.
-let HERO_ORDER = shuffleArray(HERO_TITLES.map((_, i) => i));
+let HERO_ORDER = [];
 
 /* ═══════════════════════════════════════════════════
    BACKDROP LOADER
@@ -97,7 +77,7 @@ function esc(str) {
 function getTypeBadge(type) {
   if (type === 'Movie')                return '<span class="card-type-badge badge-movie">Movie</span>';
   if (type === 'Series')               return '<span class="card-type-badge badge-series">Series</span>';
-  if (type === 'Animated Series')      return '<span class="card-type-badge badge-animated">Animated</span>';
+  if (type === 'Animated Series' || type === 'Animated Movie')      return '<span class="card-type-badge badge-animated">Animated</span>';
   if (type === 'Special Presentation') return '<span class="card-type-badge badge-special">Special</span>';
   return '';
 }
@@ -223,6 +203,7 @@ function refreshAllWLUI() {
 let heroTimer = null;
 
 function renderHero(position) {
+  if (!HERO_TITLES.length) return;
   State.heroIndex   = position;                       // position within HERO_ORDER
   const title       = HERO_TITLES[HERO_ORDER[position]];
   const meta        = window.META[title] || {};
@@ -324,89 +305,22 @@ function renderHome() {
   </div>
   <div class="section-divider" id="wl-divider" style="display:none"></div>`;
 
-  window.PHASES.forEach(phase => {
+  window.SECTIONS.filter(sec => sec.home && sec.titles.length).forEach(sec => {
+    const seeAll = sec.page === 'Phases' ? "showPage('phases')" : sec.page === 'X-Men' ? "showPage('xmen')" : '';
     html += `
-    <div class="content-section" id="section-${phase.id}">
+    <div class="content-section" id="${sec.id}">
       <div class="section-header">
         <div class="section-title-wrap">
-          <div class="section-phase-dot" style="background:${phase.color}"></div>
-          <span class="section-title">${esc(phase.label)}</span>
-          <span class="section-count">${phase.titles.length}</span>
+          <div class="section-phase-dot" style="background:${esc(sec.color)}"></div>
+          <span class="section-title">${esc(sec.label)}</span>
+          <span class="section-count">${sec.titles.length}</span>
         </div>
+        ${seeAll ? `<button class="section-see-all" onclick="${seeAll}">See All →</button>` : ''}
       </div>
-      <div class="poster-row">${phase.titles.map(t => buildCard(t)).join('')}</div>
+      <div class="poster-row">${sec.titles.map(t => buildCard(t)).join('')}</div>
     </div>
     <div class="section-divider"></div>`;
   });
-
-  const seriesTitles = window.ALL_TITLES.filter(t => {
-    const m = window.META[t];
-    return m && ['Series','Animated Series','Special Presentation'].includes(m.type);
-  });
-  html += `
-  <div class="content-section" id="section-series">
-    <div class="section-header">
-      <div class="section-title-wrap">
-        <div class="section-phase-dot" style="background:#3dbdd9"></div>
-        <span class="section-title">Marvel Series &amp; Specials</span>
-        <span class="section-count">${seriesTitles.length}</span>
-      </div>
-    </div>
-    <div class="poster-row">${seriesTitles.map(t => buildCard(t)).join('')}</div>
-  </div>
-  <div class="section-divider"></div>`;
-
-  html += `
-  <div class="content-section" id="section-xmen">
-    <div class="section-header">
-      <div class="section-title-wrap">
-        <div class="section-phase-dot" style="background:#f5c842"></div>
-        <span class="section-title">X-Men Collection</span>
-        <span class="section-count">${window.XMEN_TITLES.length}</span>
-      </div>
-      <button class="section-see-all" onclick="showPage('xmen')">See All →</button>
-    </div>
-    <div class="poster-row">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
-  </div>
-  <div class="section-divider"></div>`;
-
-  html += `
-  <div class="content-section" id="section-spiderman">
-    <div class="section-header">
-      <div class="section-title-wrap">
-        <div class="section-phase-dot" style="background:#e01818"></div>
-        <span class="section-title">Spider-Man — Every Era</span>
-        <span class="section-count">${window.SPIDERMAN_TITLES.length}</span>
-      </div>
-    </div>
-    <div class="poster-row">${window.SPIDERMAN_TITLES.map(t => buildCard(t)).join('')}</div>
-  </div>
-  <div class="section-divider"></div>`;
-
-  html += `
-  <div class="content-section" id="section-deadpool">
-    <div class="section-header">
-      <div class="section-title-wrap">
-        <div class="section-phase-dot" style="background:#e8192c"></div>
-        <span class="section-title">Deadpool Collection</span>
-        <span class="section-count">${window.DEADPOOL_TITLES.length}</span>
-      </div>
-    </div>
-    <div class="poster-row">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
-  </div>
-  <div class="section-divider"></div>`;
-
-  html += `
-  <div class="content-section" id="section-netflix-saga">
-    <div class="section-header">
-      <div class="section-title-wrap">
-        <div class="section-phase-dot" style="background:#8b0000"></div>
-        <span class="section-title">Netflix Defenders Saga</span>
-        <span class="section-count">${window.NETFLIX_SAGA_TITLES.length}</span>
-      </div>
-    </div>
-    <div class="poster-row">${window.NETFLIX_SAGA_TITLES.map(t => buildCard(t)).join('')}</div>
-  </div>`;
 
   container.innerHTML = html;
 
@@ -428,7 +342,7 @@ function updateHomeWatchlistRow() {
     section.style.display = 'block';
     section.classList.add('visible');
     if (divider) divider.style.display = 'block';
-    row.innerHTML = State.watchlist.map(t => buildCard(t)).join('');
+    row.innerHTML = State.watchlist.filter(t => window.META[t]).map(t => buildCard(t)).join('');
   }
 }
 
@@ -449,9 +363,9 @@ function renderSearch(query, filter) {
   if (State.searchFilter !== 'all') {
     results = results.filter(t => {
       const m = window.META[t]; if (!m) return false;
-      if (State.searchFilter === 'movie')    return m.type === 'Movie';
+      if (State.searchFilter === 'movie')    return m.type === 'Movie' || m.type === 'Animated Movie';
       if (State.searchFilter === 'series')   return m.type === 'Series';
-      if (State.searchFilter === 'animated') return m.type === 'Animated Series';
+      if (State.searchFilter === 'animated') return m.type === 'Animated Series' || m.type === 'Animated Movie';
       if (State.searchFilter === 'special')  return m.type === 'Special Presentation';
       return true;
     });
@@ -483,16 +397,18 @@ function renderPhasesPage() {
   const container = document.getElementById('phases-content');
   if (container._rendered) return;
   container._rendered = true;
+  const MOVIE = ['Movie', 'Animated Movie'];
+  const SHOW  = ['Series', 'Animated Series', 'Special Presentation'];
   let html = '';
-  window.PHASES.forEach((phase, i) => {
-    const movies = phase.titles.filter(t => window.META[t]?.type === 'Movie').length;
-    const series = phase.titles.filter(t => ['Series','Animated Series','Special Presentation'].includes(window.META[t]?.type)).length;
+  window.SECTIONS.filter(s => s.page === 'Phases' && s.titles.length).forEach((phase, i) => {
+    const movies = phase.titles.filter(t => MOVIE.includes(window.META[t]?.type)).length;
+    const series = phase.titles.filter(t => SHOW.includes(window.META[t]?.type)).length;
     html += `
     <div class="phase-block">
       <div class="phase-block-header">
-        <div class="phase-block-number" style="color:${phase.color}">${String(i+1).padStart(2,'0')}</div>
+        <div class="phase-block-number" style="color:${esc(phase.color)}">${String(i+1).padStart(2,'0')}</div>
         <div class="phase-block-info">
-          <div class="phase-block-name" style="color:${phase.color}">${esc(phase.label)}</div>
+          <div class="phase-block-name" style="color:${esc(phase.color)}">${esc(phase.label)}</div>
           <div class="phase-block-count">${movies} Movie${movies!==1?'s':''} · ${series} Series/Special${series!==1?'s':''}</div>
         </div>
       </div>
@@ -506,23 +422,18 @@ function renderXmenPage() {
   const container = document.getElementById('xmen-content');
   if (container._rendered) return;
   container._rendered = true;
-  container.innerHTML = `
-    <div class="phase-grid" style="margin-bottom:32px">${window.XMEN_TITLES.map(t => buildCard(t)).join('')}</div>
-    <div style="margin-top:16px;padding-top:24px;border-top:1px solid var(--glass-border)">
-      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-muted)">DEADPOOL COLLECTION</div>
-      <div class="phase-grid">${window.DEADPOOL_TITLES.map(t => buildCard(t)).join('')}</div>
-    </div>
-    <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--glass-border)">
-      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-muted)">SPIDER-MAN — EVERY ERA</div>
-      <div class="phase-grid">${window.SPIDERMAN_TITLES.map(t => buildCard(t)).join('')}</div>
-    </div>`;
+  container.innerHTML = window.SECTIONS.filter(s => s.page === 'X-Men' && s.titles.length).map((sec, i) => `
+    <div style="${i ? 'margin-top:32px;padding-top:24px;border-top:1px solid var(--glass-border)' : ''}">
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:500;letter-spacing:1px;margin-bottom:14px;color:var(--text-muted);text-transform:uppercase">${esc(sec.label)}</div>
+      <div class="phase-grid">${sec.titles.map(t => buildCard(t)).join('')}</div>
+    </div>`).join('');
 }
 
 function renderWatchlistPage() {
   const container = document.getElementById('watchlist-content');
   const empty     = document.getElementById('watchlist-empty');
   if (State.watchlist.length === 0) { container.innerHTML = ''; empty.style.display = 'block'; }
-  else { empty.style.display = 'none'; container.innerHTML = `<div class="search-results-grid">${State.watchlist.map(t => buildCard(t)).join('')}</div>`; }
+  else { empty.style.display = 'none'; container.innerHTML = `<div class="search-results-grid">${State.watchlist.filter(t => window.META[t]).map(t => buildCard(t)).join('')}</div>`; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -686,23 +597,57 @@ function clearWatchlist() {
   showToast('Watchlist cleared', '✕');
 }
 
+/* ─── DATA STATUS BOX — add ?check to the end of the site address to see it ─── */
+function showDataStatus() {
+  const st = window.DATA_STATUS || {};
+  const head = st.source === 'sheet' ? '✅ Live from your Google Sheet'
+    : st.source === 'cache' ? '⚠️ Google Sheet not reachable — showing the last saved copy'
+    : '⚠️ Showing the built-in backup — Google Sheet is not connected';
+  const items = (st.warnings || []).slice(0, 12).map(w => `<li>${esc(w)}</li>`).join('');
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:12px;right:12px;bottom:76px;z-index:6000;max-width:560px;margin:0 auto;background:#111118;border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px;font:12px/1.5 "DM Sans",sans-serif;color:#e8e8f0;box-shadow:0 12px 40px rgba(0,0,0,.7)';
+  box.innerHTML = `<b style="font-size:13px">${head}</b>`
+    + `<div style="color:#8888a0;margin-top:4px">${st.titles || 0} posts · ${st.links || 0} link rows · ${st.sections || 0} sections</div>`
+    + (st.error ? `<div style="color:#f5c518;margin-top:6px">${esc(st.error)}</div>` : '')
+    + (items ? `<div style="margin-top:8px;color:#8888a0">Things to fix in your sheet:</div><ul style="margin:4px 0 0 18px">${items}</ul>` : '')
+    + `<button onclick="this.parentNode.remove()" style="margin-top:10px;background:#e50914;color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer">Close</button>`;
+  document.body.appendChild(box);
+}
+
 /* ─── INIT ─── */
-document.addEventListener('DOMContentLoaded', () => {
-  // Start on a random title (not always the same one) every time the page loads
-  renderHero(Math.floor(Math.random() * HERO_ORDER.length));
-  startHeroRotation();
-  renderHome();
-  updateHomeWatchlistRow();
-  window.addEventListener('scroll', handleNavScroll, { passive: true });
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  const searchInput = document.getElementById('nav-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', e => handleSearchInput(e.target.value));
-    searchInput.addEventListener('focus', () => { if (State.currentPage !== 'search') showPage('search'); });
+async function startApp() {
+  const loader = document.getElementById('boot-loader');
+  const failSafe = setTimeout(() => loader && loader.remove(), 12000);
+  try {
+    try { await window.DATA_READY; } catch (e) { console.error(e); }
+    HERO_TITLES = (window.HERO_POOL && window.HERO_POOL.length) ? window.HERO_POOL : (window.ALL_TITLES || []).slice(0, 10);
+    HERO_ORDER = shuffleArray(HERO_TITLES.map((_, i) => i));
+    State.watchlist = State.watchlist.filter(t => window.META[t]);
+    State.saveWatchlist();
+    if (HERO_TITLES.length) {
+      // Start on a random title (not always the same one) every time the page loads
+      renderHero(Math.floor(Math.random() * HERO_ORDER.length));
+      startHeroRotation();
+    }
+    renderHome();
+    updateHomeWatchlistRow();
+    window.addEventListener('scroll', handleNavScroll, { passive: true });
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal-overlay')) closeModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    const searchInput = document.getElementById('nav-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', e => handleSearchInput(e.target.value));
+      searchInput.addEventListener('focus', () => { if (State.currentPage !== 'search') showPage('search'); });
+    }
+    refreshAllWLUI();
+    showPage('home');
+    if (/[?&]check/.test(location.search)) showDataStatus();
+  } finally {
+    clearTimeout(failSafe);
+    if (loader) loader.remove();
   }
-  refreshAllWLUI();
-  showPage('home');
-});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startApp);
+else startApp();
