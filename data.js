@@ -1,250 +1,207 @@
 // ═══════════════════════════════════════════════════════
 //  MarvelVault — data.js
+//  Reads everything from YOUR GOOGLE SHEET.
 // ═══════════════════════════════════════════════════════
 
-function tg(url) {
-  if (!url) return '#';
-  return url.replace('https://t.me/', 'https://telegram.me/').replace('http://t.me/', 'https://telegram.me/');
-}
+/* ▼▼▼  PASTE YOUR GOOGLE SHEET LINK BETWEEN THE QUOTES  ▼▼▼ */
+var SHEET_LINK = "https://docs.google.com/spreadsheets/d/1s0mSZsvLvDHRTmc97cC_uQQUBo2wsFzG/edit?usp=drivesdk&ouid=104794084731317752145&rtpof=true&sd=true";
+/* ▲▲▲  This is the only line you ever need to change.  ▲▲▲ */
 
-window.posterPath = function(title) {
-  let s = title
-    .replace(/\.\.\./g, '')
-    .replace(/\*/g, '')
-    .replace(/\s*\(\d{4}\)$/, '')
-    .replace(/\bseason\s+(\d+)\b/gi, 'season-$1')
-    .replace(/\bS0*(\d+)\b/g, 's$1')
-    .replace(/[^a-zA-Z0-9\s]/g, ' ')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-    .toLowerCase();
-  return 'posters/' + s + '.png';
-};
+(function () {
+  'use strict';
 
-// Same slug as posterPath — lives in /backdrops, uses .jpg extension
-window.backdropPath = function(title) {
-  return window.posterPath(title)
-    .replace(/^posters\//, 'backdrops/')
-    .replace(/\.png$/, '.jpg');
-};
+  var TABS = { titles: 'Titles', links: 'Links', sections: 'Collections' };
+  var CACHE_KEY = 'mv_sheet_cache_v1';
+  var TIMEOUT_MS = 7000;
+  var TYPES = ['Movie', 'Series', 'Animated Series', 'Animated Movie', 'Special Presentation'];
+  var SERIES_TYPES = ['Series', 'Animated Series', 'Special Presentation'];
+  var COLORS = { orange: '#e8a020', cyan: '#3dbdd9', red: '#d94040', purple: '#9b59d4', green: '#29c97e', gold: '#f0c040',
+                 yellow: '#f5c842', crimson: '#e01818', 'dark red': '#8b0000', blue: '#3d7bd9', pink: '#d94f9b',
+                 white: '#e8e8f0', gray: '#8888a0', grey: '#8888a0' };
 
-window.META = {
-  "Iron Man (2008)":{"type":"Movie","phase":"Phase 1","year":"2008","runtime":"2h 6m","rating":"7.9","genres":["Action","Adventure","Sci-Fi"],"plot":"Billionaire genius Tony Stark builds a powered suit of armor to escape captivity, then becomes Iron Man, a high-tech superhero determined to protect the world.","cast":"Robert Downey Jr., Gwyneth Paltrow, Jeff Bridges, Terrence Howard","director":"Jon Favreau"},
-  "The Incredible Hulk (2008)":{"type":"Movie","phase":"Phase 1","year":"2008","runtime":"1h 52m","rating":"6.7","genres":["Action","Adventure","Sci-Fi"],"plot":"Bruce Banner, a scientist on the run from the U.S. Government, must find a cure for the monster he turns into, while an adversary sends the Abomination to destroy him.","cast":"Edward Norton, Liv Tyler, Tim Roth, William Hurt","director":"Louis Leterrier"},
-  "Iron Man 2 (2010)":{"type":"Movie","phase":"Phase 1","year":"2010","runtime":"2h 4m","rating":"6.9","genres":["Action","Adventure","Sci-Fi"],"plot":"With the world now aware of his identity as Iron Man, Tony Stark must contend with both his declining health and a vengeful mad scientist who wants him dead.","cast":"Robert Downey Jr., Gwyneth Paltrow, Don Cheadle, Scarlett Johansson","director":"Jon Favreau"},
-  "Thor (2011)":{"type":"Movie","phase":"Phase 1","year":"2011","runtime":"1h 55m","rating":"7.0","genres":["Action","Adventure","Fantasy"],"plot":"The arrogant god Thor is cast out of Asgard to live among humans on Earth, where he soon becomes one of their finest defenders against the forces of darkness.","cast":"Chris Hemsworth, Natalie Portman, Tom Hiddleston, Anthony Hopkins","director":"Kenneth Branagh"},
-  "Captain America: The First Avenger (2011)":{"type":"Movie","phase":"Phase 1","year":"2011","runtime":"2h 4m","rating":"6.9","genres":["Action","Adventure","Sci-Fi"],"plot":"Steve Rogers, a frail young man rejected by the military, transforms into Captain America after taking a Super-Soldier serum and battles Hydra in World War II.","cast":"Chris Evans, Hugo Weaving, Hayley Atwell, Tommy Lee Jones","director":"Joe Johnston"},
-  "The Avengers (2012)":{"type":"Movie","phase":"Phase 1","year":"2012","runtime":"2h 23m","rating":"8.0","genres":["Action","Adventure","Sci-Fi"],"plot":"Earth's mightiest heroes must come together and learn to fight as a team to stop Loki and his alien army from enslaving humanity using the powerful Tesseract.","cast":"Robert Downey Jr., Chris Evans, Scarlett Johansson, Mark Ruffalo, Chris Hemsworth","director":"Joss Whedon"},
-  "Iron Man 3 (2013)":{"type":"Movie","phase":"Phase 2","year":"2013","runtime":"2h 10m","rating":"7.1","genres":["Action","Adventure","Sci-Fi"],"plot":"When Tony Stark's world is torn apart by a formidable terrorist called the Mandarin, he starts an odyssey of rebuilding and retribution that tests his true mettle.","cast":"Robert Downey Jr., Gwyneth Paltrow, Guy Pearce, Ben Kingsley","director":"Shane Black"},
-  "Thor: The Dark World (2013)":{"type":"Movie","phase":"Phase 2","year":"2013","runtime":"1h 52m","rating":"6.8","genres":["Action","Adventure","Fantasy"],"plot":"When the Dark Elves attempt to plunge the universe into darkness, Thor must embark on a perilous and personal journey that reunites him with Jane Foster.","cast":"Chris Hemsworth, Natalie Portman, Tom Hiddleston, Christopher Eccleston","director":"Alan Taylor"},
-  "Captain America: The Winter Soldier (2014)":{"type":"Movie","phase":"Phase 2","year":"2014","runtime":"2h 16m","rating":"7.7","genres":["Action","Adventure","Thriller"],"plot":"Steve Rogers struggles to embrace his role in the modern world and battles a new threat from old history: the deadly Soviet assassin known as the Winter Soldier.","cast":"Chris Evans, Scarlett Johansson, Samuel L. Jackson, Robert Redford","director":"Russo Brothers"},
-  "Guardians of the Galaxy (2014)":{"type":"Movie","phase":"Phase 2","year":"2014","runtime":"2h 1m","rating":"8.0","genres":["Action","Adventure","Comedy"],"plot":"A group of intergalactic criminals must pull together to stop a fanatical warrior with plans to purge the universe, forming an unlikely team of heroes.","cast":"Chris Pratt, Vin Diesel, Bradley Cooper, Zoe Saldana, Dave Bautista","director":"James Gunn"},
-  "Avengers: Age of Ultron (2015)":{"type":"Movie","phase":"Phase 2","year":"2015","runtime":"2h 21m","rating":"7.3","genres":["Action","Adventure","Sci-Fi"],"plot":"When Tony Stark tries to jumpstart a dormant peacekeeping program, things go awry and Earth's mightiest heroes are put to the ultimate test as a new enemy emerges.","cast":"Robert Downey Jr., Chris Evans, Mark Ruffalo, Chris Hemsworth, Scarlett Johansson","director":"Joss Whedon"},
-  "Ant-Man (2015)":{"type":"Movie","phase":"Phase 2","year":"2015","runtime":"1h 57m","rating":"7.3","genres":["Action","Adventure","Comedy"],"plot":"Armed with a super-suit that lets him shrink in scale but increase in strength, cat burglar Scott Lang teams with his mentor to protect a powerful secret.","cast":"Paul Rudd, Michael Douglas, Evangeline Lilly, Corey Stoll","director":"Peyton Reed"},
-  "Captain America: Civil War (2016)":{"type":"Movie","phase":"Phase 3","year":"2016","runtime":"2h 27m","rating":"7.8","genres":["Action","Adventure","Sci-Fi"],"plot":"Political pressure mounts to install a governing body to oversee the Avengers, fracturing the team into two opposing factions led by Steve Rogers and Tony Stark.","cast":"Chris Evans, Robert Downey Jr., Scarlett Johansson, Sebastian Stan","director":"Russo Brothers"},
-  "Doctor Strange (2016)":{"type":"Movie","phase":"Phase 3","year":"2016","runtime":"1h 55m","rating":"7.5","genres":["Action","Adventure","Fantasy"],"plot":"A brilliant but arrogant surgeon's life changes after a devastating car accident forces him to look beyond medicine, discovering the world of the mystic arts.","cast":"Benedict Cumberbatch, Chiwetel Ejiofor, Rachel McAdams, Tilda Swinton","director":"Scott Derrickson"},
-  "Guardians of the Galaxy 2 (2017)":{"type":"Movie","phase":"Phase 3","year":"2017","runtime":"2h 16m","rating":"7.6","genres":["Action","Adventure","Comedy"],"plot":"The Guardians struggle to keep together as a team while dealing with their personal family issues, notably Star-Lord's encounter with his mysterious father Ego.","cast":"Chris Pratt, Zoe Saldana, Dave Bautista, Kurt Russell, Bradley Cooper","director":"James Gunn"},
-  "Spider-Man: Homecoming (2017)":{"type":"Movie","phase":"Phase 3","year":"2017","runtime":"2h 13m","rating":"7.4","genres":["Action","Adventure","Comedy"],"plot":"Peter Parker balances his life as an ordinary high school student in Queens with his superhero alter-ego Spider-Man, while being mentored by Tony Stark.","cast":"Tom Holland, Michael Keaton, Robert Downey Jr., Marisa Tomei","director":"Jon Watts"},
-  "Thor: Ragnarok (2017)":{"type":"Movie","phase":"Phase 3","year":"2017","runtime":"2h 10m","rating":"7.9","genres":["Action","Adventure","Comedy"],"plot":"Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnarök — the destruction of his home world — at the hands of the goddess Hela.","cast":"Chris Hemsworth, Tom Hiddleston, Cate Blanchett, Tessa Thompson, Jeff Goldblum","director":"Taika Waititi"},
-  "Black Panther (2018)":{"type":"Movie","phase":"Phase 3","year":"2018","runtime":"2h 14m","rating":"7.3","genres":["Action","Adventure","Drama"],"plot":"T'Challa, King of Wakanda, rises to the throne in the isolated, technologically advanced African nation, but his claim is challenged by a vengeful outsider who threatens to drag the country into a war.","cast":"Chadwick Boseman, Michael B. Jordan, Lupita Nyong'o, Angela Bassett","director":"Ryan Coogler"},
-  "Avengers: Infinity War (2018)":{"type":"Movie","phase":"Phase 3","year":"2018","runtime":"2h 29m","rating":"8.4","genres":["Action","Adventure","Sci-Fi"],"plot":"The Avengers and their allies must be willing to sacrifice all in an attempt to defeat the powerful Thanos before his devastating plan to wipe out half of all life in the universe succeeds.","cast":"Robert Downey Jr., Chris Evans, Josh Brolin, Chris Hemsworth, Scarlett Johansson","director":"Russo Brothers"},
-  "Ant-Man and the Wasp (2018)":{"type":"Movie","phase":"Phase 3","year":"2018","runtime":"1h 58m","rating":"7.0","genres":["Action","Adventure","Comedy"],"plot":"As Scott Lang balances being both a Super Hero and a father, Hope van Dyne and Dr. Hank Pym present an urgent new mission that finds the Ant-Man fighting alongside The Wasp.","cast":"Paul Rudd, Evangeline Lilly, Michael Douglas, Michelle Pfeiffer","director":"Peyton Reed"},
-  "Captain Marvel (2019)":{"type":"Movie","phase":"Phase 3","year":"2019","runtime":"2h 4m","rating":"6.8","genres":["Action","Adventure","Sci-Fi"],"plot":"Carol Danvers becomes one of the universe's most powerful heroes when Earth is caught in the middle of a galactic war between two alien races in the 1990s.","cast":"Brie Larson, Samuel L. Jackson, Ben Mendelsohn, Jude Law","director":"Anna Boden & Ryan Fleck"},
-  "Avengers: Endgame (2019)":{"type":"Movie","phase":"Phase 3","year":"2019","runtime":"3h 2m","rating":"8.4","genres":["Action","Adventure","Drama"],"plot":"After the devastating events of Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more to reverse Thanos' actions and restore balance.","cast":"Robert Downey Jr., Chris Evans, Mark Ruffalo, Chris Hemsworth, Josh Brolin","director":"Russo Brothers"},
-  "Spider-Man: Far From Home (2019)":{"type":"Movie","phase":"Phase 3","year":"2019","runtime":"2h 9m","rating":"7.4","genres":["Action","Adventure","Comedy"],"plot":"Following the events of Avengers: Endgame, Spider-Man must step up to take on new threats in a world that has changed forever, while on a school trip across Europe.","cast":"Tom Holland, Samuel L. Jackson, Jake Gyllenhaal, Zendaya","director":"Jon Watts"},
-  "WandaVision (2021)":{"type":"Series","phase":"Phase 4","year":"2021","runtime":"9 Episodes","rating":"7.9","genres":["Fantasy","Mystery","Drama"],"plot":"Wanda Maximoff and Vision — two super-powered beings living idealized suburban lives — begin to suspect that everything is not as it seems when reality itself starts to bend.","cast":"Elizabeth Olsen, Paul Bettany, Kathryn Hahn, Teyonah Parris","director":"Matt Shakman"},
-  "Falcon and the Winter Soldier (2021)":{"type":"Series","phase":"Phase 4","year":"2021","runtime":"6 Episodes","rating":"7.2","genres":["Action","Adventure","Drama"],"plot":"Sam Wilson and Bucky Barnes team up in a global adventure that tests their abilities and their patience as they honor the legacy of Steve Rogers against Flag Smashers.","cast":"Anthony Mackie, Sebastian Stan, Daniel Brühl, Wyatt Russell","director":"Kari Skogland"},
-  "Loki season 1 (2021)":{"type":"Series","phase":"Phase 4","year":"2021","runtime":"6 Episodes","rating":"8.2","genres":["Action","Adventure","Fantasy"],"plot":"The mercurial villain Loki resumes his role as the God of Mischief in a new series, finding himself in the custody of the Time Variance Authority — a bureaucratic organization that manages the timeline.","cast":"Tom Hiddleston, Sophia Di Martino, Owen Wilson, Gugu Mbatha-Raw","director":"Kate Herron"},
-  "Black Widow (2021)":{"type":"Movie","phase":"Phase 4","year":"2021","runtime":"2h 14m","rating":"6.7","genres":["Action","Adventure","Thriller"],"plot":"Natasha Romanoff confronts the darker parts of her ledger when a dangerous conspiracy with ties to her past arises. Pursued by a force that will stop at nothing to bring her down, she must deal with her history as a spy and the broken relationships left in her wake.","cast":"Scarlett Johansson, Florence Pugh, David Harbour, Rachel Weisz","director":"Cate Shortland"},
-  "What If...? S01 (2021)":{"type":"Animated Series","phase":"Phase 4","year":"2021","runtime":"9 Episodes","rating":"7.4","genres":["Animation","Action","Adventure"],"plot":"An animated anthology series exploring alternate realities in the MCU, asking 'what if' major events unfolded differently — from Peggy Carter becoming Captain Carter to T'Challa becoming Star-Lord.","cast":"Jeffrey Wright, Hayley Atwell, Josh Keaton, Lake Bell","director":"Bryan Andrews"},
-  "Shang-Chi and the Legend of the Ten Rings (2021)":{"type":"Movie","phase":"Phase 4","year":"2021","runtime":"2h 12m","rating":"7.4","genres":["Action","Adventure","Fantasy"],"plot":"Shang-Chi must confront the past he thought he left behind when he is drawn into the web of the mysterious Ten Rings organization and his powerful father Xu Wenwu.","cast":"Simu Liu, Awkwafina, Tony Leung Chiu-wai, Meng'er Zhang","director":"Destin Daniel Cretton"},
-  "Eternals (2021)":{"type":"Movie","phase":"Phase 4","year":"2021","runtime":"2h 37m","rating":"6.3","genres":["Action","Adventure","Drama"],"plot":"The Eternals, an immortal alien race created by the Celestials, emerge from hiding after thousands of years to protect Earth from their ancient enemies the Deviants.","cast":"Gemma Chan, Richard Madden, Angelina Jolie, Salma Hayek, Kit Harington","director":"Chloé Zhao"},
-  "Hawkeye (2021)":{"type":"Series","phase":"Phase 4","year":"2021","runtime":"6 Episodes","rating":"7.5","genres":["Action","Comedy","Crime"],"plot":"Former Avenger Clint Barton has a seemingly simple mission: get back to his family for Christmas. Possible? Maybe with the help of Kate Bishop, a young archer who idolizes him.","cast":"Jeremy Renner, Hailee Steinfeld, Vera Farmiga, Tony Dalton","director":"Rhys Thomas"},
-  "Spider-Man: No Way Home (2021)":{"type":"Movie","phase":"Phase 4","year":"2021","runtime":"2h 28m","rating":"8.2","genres":["Action","Adventure","Fantasy"],"plot":"With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear, forcing Peter to discover what it truly means to be Spider-Man.","cast":"Tom Holland, Zendaya, Benedict Cumberbatch, Jamie Foxx, Willem Dafoe","director":"Jon Watts"},
-  "Moon Knight (2022)":{"type":"Series","phase":"Phase 4","year":"2022","runtime":"6 Episodes","rating":"7.3","genres":["Action","Adventure","Fantasy"],"plot":"Steven Grant, a mild-mannered gift-shop employee, becomes entangled in a deadly mystery involving Egyptian gods. He soon discovers he shares a body with mercenary Marc Spector.","cast":"Oscar Isaac, Ethan Hawke, May Calamawy, F. Murray Abraham","director":"Mohamed Diab"},
-  "Doctor Strange in the Multiverse of Madness (2022)":{"type":"Movie","phase":"Phase 4","year":"2022","runtime":"2h 6m","rating":"6.9","genres":["Action","Adventure","Horror"],"plot":"Doctor Strange teams with a mysterious Avenger to face a powerful adversary bent on making the Multiverse a truly strange place. A wild, terrifying journey through alternate realities begins.","cast":"Benedict Cumberbatch, Elizabeth Olsen, Rachel McAdams, Chiwetel Ejiofor","director":"Sam Raimi"},
-  "Ms. Marvel (2022)":{"type":"Series","phase":"Phase 4","year":"2022","runtime":"6 Episodes","rating":"6.2","genres":["Action","Adventure","Comedy"],"plot":"Kamala Khan, a Pakistani-American teenager growing up in Jersey City, is a devoted fan of the Avengers — particularly Captain Marvel. When she gets powers of her own, her life changes completely.","cast":"Iman Vellani, Matt Lintz, Yasmeen Fletcher, Zenobia Shroff","director":"Adil El Arbi & Bilall Fallah"},
-  "Thor: Love and Thunder (2022)":{"type":"Movie","phase":"Phase 4","year":"2022","runtime":"1h 59m","rating":"6.3","genres":["Action","Adventure","Comedy"],"plot":"Thor embarks on a journey unlike anything he's ever faced — a quest for inner peace. But his retirement is interrupted by Gorr the God Butcher, a galactic killer who seeks the extinction of the gods.","cast":"Chris Hemsworth, Natalie Portman, Christian Bale, Tessa Thompson","director":"Taika Waititi"},
-  "I Am Groot (2022)":{"type":"Animated Series","phase":"Phase 4","year":"2022","runtime":"5 Shorts","rating":"7.3","genres":["Animation","Comedy","Adventure"],"plot":"A series of shorts following Baby Groot as he grows up, getting into trouble with some hilarious and strange new alien characters across the galaxy while the Guardians are away.","cast":"Vin Diesel, Bradley Cooper","director":"Kirsten Lepore"},
-  "She-Hulk (2022)":{"type":"Series","phase":"Phase 4","year":"2022","runtime":"9 Episodes","rating":"5.2","genres":["Action","Comedy","Drama"],"plot":"Jennifer Walters navigates the complicated life of a single, 30-something attorney who also happens to be a green 6-foot-7-inch superpowered hulk. She breaks the fourth wall frequently.","cast":"Tatiana Maslany, Jameela Jamil, Mark Ruffalo, Tim Roth, Benedict Wong","director":"Kat Coiro"},
-  "Werewolf By Night (2022)":{"type":"Special Presentation","phase":"Phase 4","year":"2022","runtime":"54 min","rating":"7.1","genres":["Action","Horror","Mystery"],"plot":"On a dark and somber night, a secret group of monster hunters emerge from the shadows and gather at Bloodstone Temple following the death of their leader, competing for a powerful relic.","cast":"Gael García Bernal, Laura Donnelly","director":"Michael Giacchino"},
-  "Black Panther: Wakanda Forever (2022)":{"type":"Movie","phase":"Phase 4","year":"2022","runtime":"2h 41m","rating":"7.1","genres":["Action","Adventure","Drama"],"plot":"Queen Ramonda, Shuri, M'Baku, Okoye and the Dora Milaje fight to protect their nation from intervening world powers in the wake of King T'Challa's death, while a powerful new threat emerges from the sea.","cast":"Letitia Wright, Angela Bassett, Lupita Nyong'o, Tenoch Huerta","director":"Ryan Coogler"},
-  "Guardians of the Galaxy Christmas Special (2022)":{"type":"Special Presentation","phase":"Phase 4","year":"2022","runtime":"44 min","rating":"7.3","genres":["Action","Comedy","Sci-Fi"],"plot":"The Guardians travel to Earth on a holiday mission to find the perfect Christmas gift for Peter Quill, resulting in a chaotic and heartwarming adventure.","cast":"Dave Bautista, Pom Klementieff, Kevin Bacon, Sean Gunn","director":"James Gunn"},
-  "Ant-Man and the Wasp: Quantumania (2023)":{"type":"Movie","phase":"Phase 5","year":"2023","runtime":"2h 4m","rating":"6.1","genres":["Action","Adventure","Comedy"],"plot":"Scott Lang and Hope Van Dyne are pulled into the Quantum Realm, along with Hope's parents and Scott's daughter Cassie, where they encounter Kang the Conqueror.","cast":"Paul Rudd, Evangeline Lilly, Jonathan Majors, Michelle Pfeiffer, Michael Douglas","director":"Peyton Reed"},
-  "Guardians of the Galaxy 3 (2023)":{"type":"Movie","phase":"Phase 5","year":"2023","runtime":"2h 30m","rating":"7.9","genres":["Action","Adventure","Comedy"],"plot":"Still reeling from the loss of Gamora, Peter Quill must rally his team on a mission to protect the universe — and one of their own — that could be the last ride of the Guardians of the Galaxy.","cast":"Chris Pratt, Zoe Saldana, Bradley Cooper, Karen Gillan, Pom Klementieff","director":"James Gunn"},
-  "Secret Invasion (2023)":{"type":"Series","phase":"Phase 5","year":"2023","runtime":"6 Episodes","rating":"6.0","genres":["Action","Drama","Thriller"],"plot":"Nick Fury learns of a secret invasion of Earth by a faction of shape-shifting Skrulls who have been infiltrating Earth for years, posing as key figures in society.","cast":"Samuel L. Jackson, Ben Mendelsohn, Emilia Clarke, Olivia Colman","director":"Ali Selim"},
-  "I Am Groot S02 (2023)":{"type":"Animated Series","phase":"Phase 5","year":"2023","runtime":"5 Shorts","rating":"7.2","genres":["Animation","Comedy","Adventure"],"plot":"More misadventures with Groot as he grows up in the Guardians' spaceship, encountering strange aliens and getting into increasingly peculiar situations across the cosmos.","cast":"Vin Diesel","director":"Kirsten Lepore"},
-  "Loki season 2 (2023)":{"type":"Series","phase":"Phase 5","year":"2023","runtime":"6 Episodes","rating":"8.2","genres":["Action","Adventure","Fantasy"],"plot":"Loki struggles with time-slipping and must work with Mobius to safeguard the Time Variance Authority from a powerful threat that could unravel the fabric of time itself.","cast":"Tom Hiddleston, Sophia Di Martino, Owen Wilson, Ke Huy Quan","director":"Justin Benson & Aaron Moorhead"},
-  "The Marvels (2023)":{"type":"Movie","phase":"Phase 5","year":"2023","runtime":"1h 45m","rating":"5.5","genres":["Action","Adventure","Sci-Fi"],"plot":"Carol Danvers, Kamala Khan and Monica Rambeau must work together when their powers become mysteriously entangled, forcing them to swap places every time they use them.","cast":"Brie Larson, Teyonah Parris, Iman Vellani, Zawe Ashton","director":"Nia DaCosta"},
-  "What If...? season 2 (2023)":{"type":"Animated Series","phase":"Phase 5","year":"2023","runtime":"9 Episodes","rating":"7.4","genres":["Animation","Action","Adventure"],"plot":"The Watcher returns to explore more alternate MCU timelines, including Happy Hogan saving Christmas, a 1602 version of the MCU, and many more wild scenarios.","cast":"Jeffrey Wright, Hayley Atwell, Sebastian Stan, Chadwick Boseman","director":"Bryan Andrews"},
-  "Echo (2024)":{"type":"Series","phase":"Phase 5","year":"2024","runtime":"5 Episodes","rating":"6.3","genres":["Action","Crime","Drama"],"plot":"Maya Lopez must face her own past, reconnect with her Native American roots, and embrace the meaning of family and community if she is ever going to move forward and confront Wilson Fisk.","cast":"Alaqua Cox, Charlie Cox, Vincent D'Onofrio, Chaske Spencer","director":"Sydney Freeland"},
-  "Deadpool & Wolverine (2024)":{"type":"Movie","phase":"Phase 5","year":"2024","runtime":"2h 7m","rating":"7.7","genres":["Action","Comedy","Sci-Fi"],"plot":"Deadpool and Wolverine's complex relationship comes to define an unlikely pair's greatest adventure together as they face dangerous obstacles across the multiverse.","cast":"Ryan Reynolds, Hugh Jackman, Emma Corrin, Jennifer Garner","director":"Shawn Levy"},
-  "Agatha All Along (2024)":{"type":"Series","phase":"Phase 5","year":"2024","runtime":"9 Episodes","rating":"7.2","genres":["Fantasy","Drama","Comedy"],"plot":"Agatha Harkness finds herself stripped of her powers and must lead a coven of witches on a perilous and magical road known as the Witches' Road to reclaim what she's lost.","cast":"Kathryn Hahn, Joe Locke, Patti LuPone, Aubrey Plaza","director":"Jac Schaeffer"},
-  "What If...? season 3 (2024)":{"type":"Animated Series","phase":"Phase 5","year":"2024","runtime":"8 Episodes","rating":"7.6","genres":["Animation","Action","Adventure"],"plot":"The final season of the animated anthology delivers epic multiverse-spanning conclusions to beloved characters, closing out the What If...? saga in spectacular fashion.","cast":"Jeffrey Wright, Hayley Atwell, Josh Keaton","director":"Bryan Andrews"},
-  "Captain America: Brave New World (2025)":{"type":"Movie","phase":"Phase 5","year":"2025","runtime":"1h 58m","rating":"6.0","genres":["Action","Adventure","Thriller"],"plot":"Sam Wilson, the new Captain America, finds himself in the middle of an international incident and must discover the motive behind a nefarious global plot involving the Red Hulk.","cast":"Anthony Mackie, Danny Ramirez, Harrison Ford, Shira Haas","director":"Julius Onah"},
-  "Daredevil: Born Again S01 (2025)":{"type":"Series","phase":"Phase 5","year":"2025","runtime":"9 Episodes","rating":"8.1","genres":["Action","Crime","Drama"],"plot":"Matt Murdock, a blind lawyer with extraordinary abilities, fights for justice in Hell's Kitchen both as an attorney and as the vigilante Daredevil, facing Wilson Fisk who has become mayor of New York.","cast":"Charlie Cox, Vincent D'Onofrio, Jon Bernthal, Margarita Levieva","director":"Dario Scardapane"},
-  "Thunderbolts* (2025)":{"type":"Movie","phase":"Phase 5","year":"2025","runtime":"2h 7m","rating":"7.4","genres":["Action","Adventure","Drama"],"plot":"A group of MCU antiheroes — Yelena Belova, Bucky Barnes, Ghost, Red Guardian, US Agent, and Taskmaster — are brought together and must decide whether to embrace their dark pasts or become true heroes.","cast":"Florence Pugh, Sebastian Stan, David Harbour, Wyatt Russell","director":"Jake Schreier"},
-  "Ironheart S01 (2025)":{"type":"Series","phase":"Phase 5","year":"2025","runtime":"6 Episodes","rating":"7.0","genres":["Action","Adventure","Drama"],"plot":"Riri Williams, a brilliant young inventor who creates the most powerful suit of armor since Iron Man, navigates the dangers of Chicago's criminal underworld and her own prodigious mind.","cast":"Dominique Thorne, Anthony Ramos, Lyric Ross, Manny Montana","director":"Chinaka Hodge"},
-  "The Fantastic Four: First Steps (2025)":{"type":"Movie","phase":"Phase 6","year":"2025","runtime":"2h 10m","rating":"7.5","genres":["Action","Adventure","Sci-Fi"],"plot":"Marvel's First Family — Mr. Fantastic, Invisible Woman, Human Torch, and The Thing — make their highly anticipated MCU debut in a retro-futuristic setting facing an immense new threat.","cast":"Pedro Pascal, Vanessa Kirby, Joseph Quinn, Ebon Moss-Bachrach","director":"Matt Shakman"},
-  "Eyes of Wakanda S01 (2025)":{"type":"Animated Series","phase":"Phase 6","year":"2025","runtime":"4 Episodes","rating":"7.1","genres":["Animation","Action","Adventure"],"plot":"An animated anthology series exploring the history of the Vibranium Retrieval Corps and the incredible Wakandan warriors who have protected their nation's most precious resource throughout history.","cast":"Anika Noni Rose, Jesmille Darbouze","director":"Todd Harris"},
-  "Marvel Zombies S01 (2025)":{"type":"Animated Series","phase":"Phase 6","year":"2025","runtime":"4 Episodes","rating":"7.3","genres":["Animation","Horror","Action"],"plot":"A unique animated take on the Marvel universe explores a zombie apocalypse that has consumed most heroes, forcing a small band of survivors to battle undead versions of Earth's mightiest heroes.","cast":"Iman Vellani, Zac Braff, Andrew Garfield, Shameik Moore","director":"Bryan Andrews"},
-  "Wonder Man S01 (2026)":{"type":"Series","phase":"Phase 6","year":"2026","runtime":"6 Episodes","rating":"7.0","genres":["Action","Comedy","Drama"],"plot":"Simon Williams, a former villain turned reluctant hero, tries to make it as an actor in Hollywood while navigating his new life as Wonder Man and the complicated legacy of his past.","cast":"Yahya Abdul-Mateen II, Damon Wayans Jr., Ben Kingsley","director":"Destin Daniel Cretton"},
-  "Daredevil: Born Again S02 (2026)":{"type":"Series","phase":"Phase 6","year":"2026","runtime":"8 Episodes","rating":"8.3","genres":["Action","Crime","Drama"],"plot":"The second season of Daredevil's Born Again continuation brings even more gritty, street-level action to Hell's Kitchen as Matt Murdock faces new threats and old enemies return with a vengeance.","cast":"Charlie Cox, Vincent D'Onofrio, Jon Bernthal","director":"Dario Scardapane"},
-  "The Punisher: One Last Kill (2026)":{"type":"Movie","phase":"Phase 6","year":"2026","runtime":"2h 0m","rating":"7.5","genres":["Action","Crime","Thriller"],"plot":"Frank Castle, the Punisher, undertakes one final mission that forces him to confront the most personal and darkest chapter of his relentless one-man war on crime.","cast":"Jon Bernthal","director":"TBA"},
-  "X-Men (2000)":{"type":"Movie","phase":null,"year":"2000","runtime":"1h 44m","rating":"7.4","genres":["Action","Adventure","Sci-Fi"],"plot":"In a world where mutants exist, Magneto's Brotherhood of Mutants wages a war against humanity. Professor Xavier's team of X-Men must stop them and protect a world that hates and fears mutants.","cast":"Hugh Jackman, Patrick Stewart, Ian McKellen, Halle Berry, Famke Janssen","director":"Bryan Singer"},
-  "X2: X-Men United (2003)":{"type":"Movie","phase":null,"year":"2003","runtime":"2h 14m","rating":"7.4","genres":["Action","Adventure","Sci-Fi"],"plot":"The X-Men band together to find the mutant assassin who attempted to kill the President, while also having to deal with William Stryker, a scientist who wants to destroy all mutants.","cast":"Hugh Jackman, Patrick Stewart, Ian McKellen, Halle Berry","director":"Bryan Singer"},
-  "X-Men: The Last Stand (2006)":{"type":"Movie","phase":null,"year":"2006","runtime":"1h 44m","rating":"6.7","genres":["Action","Adventure","Sci-Fi"],"plot":"When a cure is found to treat mutations, lines are drawn between the X-Men and the Brotherhood as an all-out war threatens the future of mutantkind and humanity alike.","cast":"Hugh Jackman, Halle Berry, Ian McKellen, Famke Janssen, Patrick Stewart","director":"Brett Ratner"},
-  "X-Men Origins: Wolverine (2009)":{"type":"Movie","phase":null,"year":"2009","runtime":"1h 47m","rating":"6.6","genres":["Action","Adventure","Sci-Fi"],"plot":"A look at Wolverine's early life, his time with the government squad Team X, and the events that led to the Weapon X program bonding adamantium to his skeleton.","cast":"Hugh Jackman, Liev Schreiber, Ryan Reynolds, Danny Huston","director":"Gavin Hood"},
-  "X-Men: First Class (2011)":{"type":"Movie","phase":null,"year":"2011","runtime":"2h 12m","rating":"7.7","genres":["Action","Adventure","Drama"],"plot":"In 1962, during the Cuban Missile Crisis, young Charles Xavier and Erik Lehnsherr assemble the first team of X-Men to stop Sebastian Shaw, a powerful mutant who wants nuclear war.","cast":"James McAvoy, Michael Fassbender, Jennifer Lawrence, Kevin Bacon","director":"Matthew Vaughn"},
-  "The Wolverine (2013)":{"type":"Movie","phase":null,"year":"2013","runtime":"2h 6m","rating":"6.7","genres":["Action","Adventure","Sci-Fi"],"plot":"Wolverine travels to Japan to visit an old friend whose life he saved decades ago, and finds himself caught in a conspiracy involving the yakuza, samurai, and mutants.","cast":"Hugh Jackman, Tao Okamoto, Rila Fukushima, Svetlana Khodchenkova","director":"James Mangold"},
-  "X-Men: Days of Future Past (2014)":{"type":"Movie","phase":null,"year":"2014","runtime":"2h 12m","rating":"8.0","genres":["Action","Adventure","Sci-Fi"],"plot":"The X-Men send Wolverine to the past in a desperate effort to change history and prevent an event that results in doom for both humans and mutants — stopping the creation of the Sentinels.","cast":"Hugh Jackman, James McAvoy, Michael Fassbender, Jennifer Lawrence, Patrick Stewart","director":"Bryan Singer"},
-  "Deadpool (2016)":{"type":"Movie","phase":null,"year":"2016","runtime":"1h 48m","rating":"8.0","genres":["Action","Comedy","Sci-Fi"],"plot":"A fast-talking mercenary with a twisted sense of humor is subjected to a rogue experiment that leaves him with accelerated healing powers and a decision to track down the man who ruined his life.","cast":"Ryan Reynolds, Morena Baccarin, Ed Skrein, T.J. Miller","director":"Tim Miller"},
-  "X-Men: Apocalypse (2016)":{"type":"Movie","phase":null,"year":"2016","runtime":"2h 24m","rating":"6.9","genres":["Action","Adventure","Sci-Fi"],"plot":"Since the dawn of civilization, the god-like mutant Apocalypse has been worshiped. After awakening from thousands of years of slumber, he recruits the Four Horsemen to cleanse mankind.","cast":"James McAvoy, Michael Fassbender, Jennifer Lawrence, Oscar Isaac","director":"Bryan Singer"},
-  "Logan (2017)":{"type":"Movie","phase":null,"year":"2017","runtime":"2h 17m","rating":"8.1","genres":["Action","Drama","Sci-Fi"],"plot":"In the near future, a weary Logan cares for an ailing Professor X while hiding out. His attempts to disappear are upended when he meets a young mutant girl being hunted by dark forces.","cast":"Hugh Jackman, Patrick Stewart, Dafne Keen, Boyd Holbrook","director":"James Mangold"},
-  "Deadpool 2 (2018)":{"type":"Movie","phase":null,"year":"2018","runtime":"1h 59m","rating":"7.7","genres":["Action","Comedy","Sci-Fi"],"plot":"Foul-mouthed mutant mercenary Deadpool assembles a team of fellow mutant heroes to protect a young boy from the time-traveling soldier Cable, who has come from the future to kill the child.","cast":"Ryan Reynolds, Josh Brolin, Morena Baccarin, Zazie Beetz, Julian Dennison","director":"David Leitch"},
-  "Dark Phoenix (2019)":{"type":"Movie","phase":null,"year":"2019","runtime":"1h 53m","rating":"5.7","genres":["Action","Adventure","Sci-Fi"],"plot":"Jean Grey begins to develop incredible powers that corrupt and turn her into a Dark Phoenix. Now the X-Men must decide if the life of a team member is worth more than all the people living on Earth.","cast":"James McAvoy, Michael Fassbender, Sophie Turner, Jennifer Lawrence","director":"Simon Kinberg"},
-  "The New Mutants (2020)":{"type":"Movie","phase":null,"year":"2020","runtime":"1h 34m","rating":"5.3","genres":["Action","Horror","Sci-Fi"],"plot":"Five young mutants, just discovering their abilities while held in a secret facility against their will, fight to escape their past sins and save themselves from the nightmarish visions tormenting them.","cast":"Maisie Williams, Anya Taylor-Joy, Charlie Heaton, Alice Braga","director":"Josh Boone"},
-  "Daredevil season 1 (2015)":{"type":"Series","phase":null,"year":"2015","runtime":"13 Episodes","rating":"8.6","genres":["Action","Crime","Drama"],"plot":"Blinded as a child, lawyer Matt Murdock fights injustice by day in the courtroom and by night as the masked vigilante Daredevil, taking on Hell's Kitchen's rising crime lord Wilson Fisk.","cast":"Charlie Cox, Deborah Ann Woll, Elden Henson, Vincent D'Onofrio","director":"Drew Goddard (creator)"},
-  "Jessica Jones season 1 (2015)":{"type":"Series","phase":null,"year":"2015","runtime":"13 Episodes","rating":"8.0","genres":["Crime","Drama","Mystery"],"plot":"Haunted by her short-lived superhero career, private investigator Jessica Jones rebuilds her life in Hell's Kitchen until a case forces her to confront the mind-controlling Kilgrave, the man who once enslaved her.","cast":"Krysten Ritter, David Tennant, Rachael Taylor, Mike Colter","director":"Melissa Rosenberg (creator)"},
-  "Daredevil season 2 (2016)":{"type":"Series","phase":null,"year":"2016","runtime":"13 Episodes","rating":"8.1","genres":["Action","Crime","Drama"],"plot":"Matt Murdock's life is further complicated when the vigilante Punisher arrives in New York, while an old flame from his past resurfaces to drag him deeper into a war with the mystical Hand.","cast":"Charlie Cox, Jon Bernthal, Elodie Yung, Deborah Ann Woll","director":"Doug Petrie & Marco Ramirez"},
-  "Luke Cage season 1 (2016)":{"type":"Series","phase":null,"year":"2016","runtime":"13 Episodes","rating":"7.8","genres":["Action","Crime","Drama"],"plot":"A former convict with unbreakable skin and superhuman strength becomes a reluctant hero fighting to protect his Harlem community from corrupt officials and a criminal underworld.","cast":"Mike Colter, Mahershala Ali, Simone Missick, Alfre Woodard","director":"Cheo Hodari Coker (creator)"},
-  "Iron Fist season 1 (2017)":{"type":"Series","phase":null,"year":"2017","runtime":"13 Episodes","rating":"6.7","genres":["Action","Adventure","Drama"],"plot":"Returning to New York fifteen years after being presumed dead, billionaire heir Danny Rand, now the Immortal Iron Fist with mystical martial arts powers, sets out to reclaim his birthright and fight the criminal organization known as the Hand.","cast":"Finn Jones, Jessica Henwick, Tom Pelphrey, Jessica Stroup","director":"Scott Buck (creator)"},
-  "The Defenders (2017)":{"type":"Series","phase":null,"year":"2017","runtime":"8 Episodes","rating":"7.6","genres":["Action","Adventure","Crime"],"plot":"Daredevil, Jessica Jones, Luke Cage and Iron Fist reluctantly join forces when the ancient criminal organization known as the Hand threatens to destroy New York City.","cast":"Charlie Cox, Krysten Ritter, Mike Colter, Finn Jones, Sigourney Weaver","director":"Douglas Petrie & Marco Ramirez"},
-  "The Punisher season 1 (2017)":{"type":"Series","phase":null,"year":"2017","runtime":"13 Episodes","rating":"8.2","genres":["Action","Crime","Drama"],"plot":"Former Marine Frank Castle uncovers a conspiracy that leads all the way to the top of the U.S. government while continuing his brutal one-man war against the criminals who murdered his family.","cast":"Jon Bernthal, Ben Barnes, Amber Rose Revah, Ebon Moss-Bachrach","director":"Steve Lightfoot (creator)"},
-  "Jessica Jones season 2 (2018)":{"type":"Series","phase":null,"year":"2018","runtime":"13 Episodes","rating":"6.7","genres":["Crime","Drama","Mystery"],"plot":"Jessica digs into the origins of her powers and the shadowy organization IGH, uncovering long-buried secrets about her past that threaten to unravel everything she's built.","cast":"Krysten Ritter, Rachael Taylor, Eka Darville, Janet McTeer","director":"Melissa Rosenberg (showrunner)"},
-  "Luke Cage season 2 (2018)":{"type":"Series","phase":null,"year":"2018","runtime":"13 Episodes","rating":"6.9","genres":["Action","Crime","Drama"],"plot":"As Luke Cage's fame as Harlem's bulletproof hero grows, a formidable new enemy from Jamaica arrives, testing Luke's resolve and his relationship with the community he's sworn to protect.","cast":"Mike Colter, Mustafa Shakir, Simone Missick, Alfre Woodard","director":"Cheo Hodari Coker (showrunner)"},
-  "Iron Fist season 2 (2018)":{"type":"Series","phase":null,"year":"2018","runtime":"10 Episodes","rating":"6.5","genres":["Action","Adventure","Drama"],"plot":"Danny Rand faces a new challenge to his title as the Iron Fist while trying to keep New York safe and confront the mounting cost of his mystical power.","cast":"Finn Jones, Jessica Henwick, Sacha Dhawan, Alice Eve","director":"M. Raven Metzner (showrunner)"},
-  "Daredevil season 3 (2018)":{"type":"Series","phase":null,"year":"2018","runtime":"13 Episodes","rating":"8.8","genres":["Action","Crime","Drama"],"plot":"Presumed dead and stripped of his faith, Matt Murdock returns to a life in shadows as Wilson Fisk manipulates his way to freedom, forcing Daredevil into his most personal and devastating battle yet.","cast":"Charlie Cox, Vincent D'Onofrio, Deborah Ann Woll, Elden Henson","director":"Erik Oleson (showrunner)"},
-  "The Punisher season 2 (2019)":{"type":"Series","phase":null,"year":"2019","runtime":"13 Episodes","rating":"7.9","genres":["Action","Crime","Drama"],"plot":"Frank Castle hoped his war was over, but a chance encounter pulls him back into a violent conflict as an old enemy resurfaces and a new one emerges to hunt him down.","cast":"Jon Bernthal, Ben Barnes, Amber Rose Revah, Josh Stewart","director":"Steve Lightfoot (showrunner)"},
-  "Jessica Jones season 3 (2019)":{"type":"Series","phase":null,"year":"2019","runtime":"13 Episodes","rating":"6.9","genres":["Crime","Drama","Mystery"],"plot":"In the final season, Jessica confronts a methodical serial killer who idolizes her, while her fractured relationship with Trish reaches a breaking point that will change both their lives forever.","cast":"Krysten Ritter, Rachael Taylor, Eka Darville, Jeremy Bobb","director":"Melissa Rosenberg (showrunner)"},
-  "Spider-Man: Brand New Day (2026)":{"type":"Movie","phase":"Phase 6","year":"2026","runtime":"2h 25m","rating":"8.2","genres":["Action","Adventure","Fantasy"],"plot":"Living in total anonymity after the world forgot he ever existed, Peter Parker fights crime alone as Spider-Man — until a volatile new threat forces him to team up with Frank Castle and a mysterious captive mutant, Jean Grey.","cast":"Tom Holland, Zendaya, Sadie Sink, Jon Bernthal, Jacob Batalon, Mark Ruffalo","director":"Destin Daniel Cretton"},
-  "Spider-Man (2002)":{"type":"Movie","phase":null,"year":"2002","runtime":"2h 1m","rating":"7.4","genres":["Action","Adventure","Sci-Fi"],"plot":"After being bitten by a genetically-modified spider, a shy Queens teenager gains spider-like abilities that he uses to fight injustice as a masked superhero, while facing a vengeful new enemy: the Green Goblin.","cast":"Tobey Maguire, Kirsten Dunst, Willem Dafoe, James Franco","director":"Sam Raimi"},
-  "Spider-Man 2 (2004)":{"type":"Movie","phase":null,"year":"2004","runtime":"2h 7m","rating":"7.5","genres":["Action","Adventure","Sci-Fi"],"plot":"Peter Parker is beset with troubles in his failing personal life as he battles a brilliant scientist named Otto Octavius, who has transformed into the mechanical menace Doctor Octopus.","cast":"Tobey Maguire, Kirsten Dunst, Alfred Molina, James Franco","director":"Sam Raimi"},
-  "Spider-Man 3 (2007)":{"type":"Movie","phase":null,"year":"2007","runtime":"2h 19m","rating":"6.3","genres":["Action","Adventure","Sci-Fi"],"plot":"A strange black entity from another world bonds with Peter Parker and causes his inner darkness to grow, forcing him to confront the Sandman, a new Green Goblin, and Venom all at once.","cast":"Tobey Maguire, Kirsten Dunst, Topher Grace, Thomas Haden Church","director":"Sam Raimi"},
-  "The Amazing Spider-Man (2012)":{"type":"Movie","phase":null,"year":"2012","runtime":"2h 16m","rating":"6.9","genres":["Action","Adventure","Sci-Fi"],"plot":"After Peter Parker is bitten by a genetically altered spider, he gains newfound powers and ventures out to solve the mystery of his parents' disappearance, leading him to Oscorp and the monstrous Lizard.","cast":"Andrew Garfield, Emma Stone, Rhys Ifans, Denis Leary","director":"Marc Webb"},
-  "The Amazing Spider-Man 2 (2014)":{"type":"Movie","phase":null,"year":"2014","runtime":"2h 22m","rating":"6.6","genres":["Action","Adventure","Sci-Fi"],"plot":"When New York is put under siege by Oscorp, it is up to Spider-Man to save the city he swore to protect, facing the electrically-charged Electro, the vengeful Green Goblin, and the deadly Rhino.","cast":"Andrew Garfield, Emma Stone, Jamie Foxx, Dane DeHaan","director":"Marc Webb"},
-  "Spider-Man: Into the Spider-Verse (2018)":{"type":"Animated Movie","phase":null,"year":"2018","runtime":"1h 57m","rating":"8.4","genres":["Animation","Action","Adventure"],"plot":"Brooklyn teenager Miles Morales is unexpectedly bitten by a radioactive spider and develops unfathomable powers, just as a super collider threatens to bring other Spider-heroes from across the multiverse crashing into his own.","cast":"Shameik Moore, Jake Johnson, Hailee Steinfeld, Mahershala Ali","director":"Bob Persichetti, Peter Ramsey, Rodney Rothman"},
-  "Spider-Man: Across the Spider-Verse (2023)":{"type":"Animated Movie","phase":null,"year":"2023","runtime":"2h 20m","rating":"8.6","genres":["Animation","Action","Adventure"],"plot":"Miles Morales catapults across the multiverse, joining Gwen Stacy and a new team of Spider-People to face a threat unlike anything they've encountered — one that puts everything he's known into question.","cast":"Shameik Moore, Hailee Steinfeld, Brian Tyree Henry, Oscar Isaac","director":"Joaquim Dos Santos, Kemp Powers, Justin K. Thompson"},
-};
+  /* t.me → telegram.me */
+  function tg(url) {
+    url = String(url || '').trim();
+    if (!url) return '#';
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    return url.replace(/^https?:\/\/(www\.)?t\.me\//i, 'https://telegram.me/');
+  }
+  window.tg = tg;
 
-window.DOWNLOADS = {
-  "Iron Man (2008)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNT0xMg")}],
-  "The Incredible Hulk (2008)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjM9Mjc")}],
-  "Iron Man 2 (2010)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDI9NDY")}],
-  "Thor (2011)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDc9NTE")}],
-  "Captain America: The First Avenger (2011)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTI9NjE")}],
-  "The Avengers (2012)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjI9Njc")}],
-  "Iron Man 3 (2013)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjk9NzY")}],
-  "Thor: The Dark World (2013)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzg9ODM")}],
-  "Captain America: The Winter Soldier (2014)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODQ9OTE")}],
-  "Guardians of the Galaxy (2014)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTM9OTg")}],
-  "Avengers: Age of Ultron (2015)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTk9MTA4")}],
-  "Ant-Man (2015)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTA5PTExNA")}],
-  "Captain America: Civil War (2016)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTE1PTEyMg")}],
-  "Doctor Strange (2016)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTIzPTEyOQ")}],
-  "Guardians of the Galaxy 2 (2017)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTMwPTEzNA")}],
-  "Spider-Man: Homecoming (2017)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTM1PTEzOQ")}],
-  "Thor: Ragnarok (2017)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTQwPTE0NA")}],
-  "Black Panther (2018)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTQ1PTE0OQ")}],
-  "Avengers: Infinity War (2018)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTUwPTE1OQ")}],
-  "Ant-Man and the Wasp (2018)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTYwPTE2NQ")}],
-  "Captain Marvel (2019)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY2PTE3MQ")}],
-  "Avengers: Endgame (2019)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTcyPTE3Nw")}],
-  "Spider-Man: Far From Home (2019)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTc4PTE4Mw")}],
-  "WandaVision (2021)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjA3PTIxNQ")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTg3PTE5NQ")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjE3PTIyNQ")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk3PTIwNQ")}],
-  "Falcon and the Winter Soldier (2021)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjI4PTIzMw")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjM0PTIzOQ")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQwPTI0Ng")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQ3PTI1Mw")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjU0PTI2MA")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjYxPTI2Nw")}],
-  "Loki season 1 (2021)":[{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjcwPTI3Ng")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjc3PTI4Mw")},{q:"2160p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjg0PTI5MQ")}],
-  "Black Widow (2021)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjk0PTMwMA")}],
-  "What If...? S01 (2021)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzAzPTMwOA")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzA5PTMxMw")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE0PTMxOA")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE5PTMyMw")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI0PTMyOA")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI5PTMzMw")},{q:"Episode 7",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM0PTMzOA")},{q:"Episode 8",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM5PTM0Mw")},{q:"Episode 9",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzQ0PTM1Mg")}],
-  "Shang-Chi and the Legend of the Ten Rings (2021)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzU1PTM2MQ")}],
-  "Eternals (2021)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzYyPTM2OQ")}],
-  "Hawkeye (2021)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDAxPTQwOA")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzg1PTM5MQ")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzkyPTM5OA")}],
-  "Spider-Man: No Way Home (2021)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDExPTQxOQ")}],
-  "Moon Knight (2022)":[{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDIxPTQyNw")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDI4PTQzNA")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDM1PTQ0MQ")},{q:"2160p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDQyPTQ1MA")}],
-  "Doctor Strange in the Multiverse of Madness (2022)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDUzPTQ2MQ")}],
-  "Ms. Marvel (2022)":[{q:"480p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDYzPTQ2OQ")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDcwPTQ3Ng")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDc3PTQ4Mw")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDg0PTQ5MA")},{q:"2160p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDkxPTQ5OQ")}],
-  "Thor: Love and Thunder (2022)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTAzPTUxMg")}],
-  "I Am Groot (2022)":[{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTE0PTUxOQ")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTIwPTUyNQ")},{q:"S01 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTI2PTUyOQ")}],
-  "She-Hulk (2022)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTMyPTU0MQ")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTQyPTU1MQ")},{q:"2160p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTUyPTU2MQ")}],
-  "Werewolf By Night (2022)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FOOL4146994638243")}],
-  "Black Panther: Wakanda Forever (2022)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTg3PTU5Mw")}],
-  "Guardians of the Galaxy Christmas Special (2022)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNTk0PTU5OQ")}],
-  "Ant-Man and the Wasp: Quantumania (2023)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjAwPTYwNQ")}],
-  "Guardians of the Galaxy 3 (2023)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjEzPTYyMg")}],
-  "Secret Invasion (2023)":[{q:"480p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjI0PTYzMQ")},{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjMyPTYzOQ")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjQwPTY0Nw")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjQ4PTY1NQ")},{q:"S01 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjU2PTY2MA")}],
-  "I Am Groot S02 (2023)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjYzPTY2OA")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjY5PTY3NA")},{q:"S02 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjc1PTY3OA")}],
-  "Loki season 2 (2023)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjgxPTY4Ng")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjg3PTY5Mg")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjkzPTY5OA")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNjk5PTcwNA")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzA1PTcxMA")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzExPTcxNg")}],
-  "The Marvels (2023)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzE5PTcyNg")}],
-  "What If...? season 2 (2023)":[{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzI5PTczOA")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzM5PTc0OA")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzQ5PTc1OA")},{q:"2160p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzU5PTc2OA")},{q:"S01 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzY5PTc3Mg")}],
-  "Echo (2024)":[{q:"480p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzc2PTc4Mw")},{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNzg1PTc5Mg")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODAwPTgwNw")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODA4PTgxNQ")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODE2PTgyMw")},{q:"S01 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODI0PTgyOA")}],
-  "Deadpool & Wolverine (2024)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTAwMD0xMDA5")}],
-  "Agatha All Along (2024)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODUwPTg1NQ")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODU2PTg2MQ")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODYyPTg2OA")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLODg3PTg5Ng")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTE5PTkyNg")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTI4PTkzNw")},{q:"Episode 7",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTQ1PTk1Mw")},{q:"Episode 8",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTYyPTk3MQ")},{q:"Episode 9",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLOTg0PTk1MQ")}],
-  "What If...? season 3 (2024)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTA1MT0xMDYw")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTA3Mz0xMDgy")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTA4Mz0xMDkx")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTA5Nj0xMTAz")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTE1Mj0xMTYw")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTE2NT0xMTcz")},{q:"Episode 7",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTEyMj0xMTMx")},{q:"Episode 8",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTEzMz0xMTQy")}],
-  "Captain America: Brave New World (2025)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTM3MT0xMzc4")}],
-  "Daredevil: Born Again S01 (2025)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTIyNz0xMjM2")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTIzNz0xMjQ2")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTI1Nj0xMjY1")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTI3OT0xMjg4")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTMwMD0xMzA5")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTMyMD0xMzI5")},{q:"Episode 7",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTM1MT0xMzU5")},{q:"Episode 8",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTM2Mj0xMzY5")},{q:"Episode 9",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTQxMD0xNDE4")}],
-  "Thunderbolts* (2025)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTU0Mz0xNTUw")}],
-  "Ironheart S01 (2025)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTQ4Mz0xNDkx")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTQ5Mz0xNTAy")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTUwMz0xNTEy")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTUxMz0xNTIx")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTUyMj0xNTMx")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTUzMj0xNTQx")}],
-  "The Fantastic Four: First Steps (2025)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTYxMz0xNjIx")}],
-  "Eyes of Wakanda S01 (2025)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTU3Mj0xNTc4")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTU4Nj0xNTky")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTU3OT0xNTg1")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTYwMD0xNjA2")},{q:"S01 Combined",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTU5Mz0xNTk5")}],
-  "Marvel Zombies S01 (2025)":[{q:"720p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTYzNT0xNjQx")},{q:"720p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY1MD0xNjU2")},{q:"1080p",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY0Mj0xNjQ4")},{q:"1080p 10bit",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY1Nz0xNjYz")}],
-  "Wonder Man S01 (2026)":[{q:"480p H264",audio:"Hindi, English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk5Nj0yMDA1")},{q:"720p 10bit",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk2Nj0xOTc1")},{q:"720p H264",audio:"Hindi, English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjAwNj0yMDE1")},{q:"1080p 10bit",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk3Nj0xOTg1")},{q:"1080p JHS H265",audio:"Hindi, English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjAxNj0yMDI1")},{q:"1080p H264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk0ND0xOTUz")},{q:"1080p H265",audio:"Hindi, English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk1ND0xOTYz")},{q:"1080p HEVC 10bit",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTk4Nj0xOTk1")},{q:"2160p H265",audio:"Hindi, English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjAyNj0yMDM1")}],
-  "Daredevil: Born Again S02 (2026)":[{q:"Episode 1",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjA0OT0yMDU4")},{q:"Episode 2",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjA2MD0yMDY5")},{q:"Episode 3",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjA3MD0yMDc4")},{q:"Episode 4",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjA5ND0yMTAz")},{q:"Episode 5",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjEwND0yMTEz")},{q:"Episode 6",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjExND0yMTIz")},{q:"Episode 7",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjE2MT0yMTY5")},{q:"Episode 8",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjIxMT0yMjIw")}],
-  "The Punisher: One Last Kill (2026)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjIyNT0yMjMy")}],
-  "X-Men (2000)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY3OT0xNjg4")}],
-  "X2: X-Men United (2003)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTY5ND0xNzAz")}],
-  "X-Men: The Last Stand (2006)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTcwOD0xNzE3")}],
-  "X-Men Origins: Wolverine (2009)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTcyNT0xNzM0")}],
-  "X-Men: First Class (2011)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTc0MT0xNzUw")}],
-  "The Wolverine (2013)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTc1MT0xNzYw")}],
-  "X-Men: Days of Future Past (2014)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTc3MD0xNzc5")}],
-  "Deadpool (2016)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTc4OT0xNzk4")}],
-  "X-Men: Apocalypse (2016)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTgyNT0xODM0")}],
-  "Logan (2017)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTg0MT0xODUw")}],
-  "Deadpool 2 (2018)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTg2NT0xODc0")}],
-  "Dark Phoenix (2019)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTg5ND0xOTAz")}],
-  "The New Mutants (2020)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMTkxOT0xOTI4")}],
-  "Daredevil season 1 (2015)":[{q:"480p",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjUxMT0yNTIw")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjI4Nz0yMjk2")},{q:"720p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjM1NT0yMzY0")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjMwND0yMzEz")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjMyMT0yMzMw")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjMzOD0yMzQ3")}],
-  "Jessica Jones season 1 (2015)":[{q:"480p",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjYzMD0yNjM5")},{q:"480p",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjY1NT0yNjY0")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjYxMz0yNjIy")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjY3Mj0yNjgx")}],
-  "Daredevil season 2 (2016)":[{q:"480p",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjU0Mz0yNTUy")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjM3Mj0yMzgx")},{q:"720p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQyNj0yNDM1")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjM4OT0yMzk4")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQwOD0yNDE3")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQ0Mz0yNDUy")}],
-  "Luke Cage season 1 (2016)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjk4Nj0yOTk1")},{q:"480p x264",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjkzND0yOTQz")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzc0OD0zNzU3")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjk2OT0yOTc4")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjk1MT0yOTYw")}],
-  "Iron Fist season 1 (2017)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzA4OD0zMDk3")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzA3MT0zMDgw")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzEwNz0zMTE2")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzEyND0zMTMz")}],
-  "The Defenders (2017)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzIzMz0zMjQy")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzIyMz0zMjMy")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI1Mz0zMjYy")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI0Mz0zMjUy")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI2Mz0zMjcy")}],
-  "The Punisher season 1 (2017)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzMyND0zMzMz")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI3Mz0zMjgy")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzMwNz0zMzE2")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzI5MD0zMjk5")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM0MT0zMzUw")}],
-  "Jessica Jones season 2 (2018)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjcwNj0yNzE1")},{q:"480p",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjcyMz0yNzMy")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjY4OT0yNjk4")},{q:"720p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjc3ND0yNzgz")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjc0MD0yNzQ5")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjc1Nz0yNzY2")}],
-  "Luke Cage season 2 (2018)":[{q:"480p",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzAzNz0zMDQ2")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzAwMz0zMDEy")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzA1ND0zMDYz")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzAyMD0zMDI5")}],
-  "Iron Fist season 2 (2018)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE1NT0zMTY0")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE0MT0zMTUw")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE2OT0zMTc4")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzE4ND0zMTkz")},{q:"1080p 10bit",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzIwNz0zMjE2")}],
-  "Daredevil season 3 (2018)":[{q:"480p",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjU2MD0yNTY5")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQ2MD0yNDY5")},{q:"720p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjU3Nz0yNTg2")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQ3Nz0yNDg2")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjQ5ND0yNTAz")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjU5ND0yNjAz")}],
-  "The Punisher season 2 (2019)":[{q:"480p",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzQyNj0zNDM1")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM1OD0zMzY3")},{q:"720p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM5Mj0zNDAx")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzM3NT0zMzg0")},{q:"1080p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzQwOT0zNDE4")}],
-  "Jessica Jones season 3 (2019)":[{q:"480p x264",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjgyOD0yODM3")},{q:"480p x264",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjg0Nz0yODU2")},{q:"720p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjc5ND0yODAz")},{q:"720p x264",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjg2Nj0yODc1")},{q:"1080p x265",audio:"English",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjg4Mz0yODky")},{q:"1080p x265",audio:"English, Hindi",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMjkwMD0yOTA5")}],
-  "Spider-Man: Brand New Day (2026)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLNDUxNT00NTI0")}],
-  "Spider-Man (2002)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzQ4OT0zNDk3")}],
-  "Spider-Man 2 (2004)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzUxMD0zNTE5")}],
-  "Spider-Man 3 (2007)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzUyNz0zNTM2")}],
-  "The Amazing Spider-Man (2012)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzU0OT0zNTU4")}],
-  "The Amazing Spider-Man 2 (2014)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzU4Mj0zNTkx")}],
-  "Spider-Man: Into the Spider-Verse (2018)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzYxNj0zNjI1")}],
-  "Spider-Man: Across the Spider-Verse (2023)":[{q:"Download",url:tg("https://t.me/Mcumoviesmibbot?start=FBOLMzY0MT0zNjUw")}],
-};
+  /* poster / backdrop file names (same rule as always) */
+  window.posterPath = function (title) {
+    var s = String(title)
+      .replace(/\.\.\./g, '').replace(/\*/g, '')
+      .replace(/\s*\(\d{4}\)$/, '')
+      .replace(/\bseason\s+(\d+)\b/gi, 'season-$1')
+      .replace(/\bS0*(\d+)\b/g, 's$1')
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
+      .toLowerCase();
+    return 'posters/' + s + '.png';
+  };
+  window.backdropPath = function (title) {
+    return window.posterPath(title).replace(/^posters\//, 'backdrops/').replace(/\.png$/, '.jpg');
+  };
 
-window.PHASES = [
-  {id:"p1",label:"Phase 1 — The Beginning",short:"Phase 1",color:"#e8a020",titles:["Iron Man (2008)","The Incredible Hulk (2008)","Iron Man 2 (2010)","Thor (2011)","Captain America: The First Avenger (2011)","The Avengers (2012)"]},
-  {id:"p2",label:"Phase 2 — Rising Threat",short:"Phase 2",color:"#3dbdd9",titles:["Iron Man 3 (2013)","Thor: The Dark World (2013)","Captain America: The Winter Soldier (2014)","Guardians of the Galaxy (2014)","Avengers: Age of Ultron (2015)","Ant-Man (2015)"]},
-  {id:"p3",label:"Phase 3 — Infinity Saga",short:"Phase 3",color:"#d94040",titles:["Captain America: Civil War (2016)","Doctor Strange (2016)","Guardians of the Galaxy 2 (2017)","Spider-Man: Homecoming (2017)","Thor: Ragnarok (2017)","Black Panther (2018)","Avengers: Infinity War (2018)","Ant-Man and the Wasp (2018)","Captain Marvel (2019)","Avengers: Endgame (2019)","Spider-Man: Far From Home (2019)"]},
-  {id:"p4",label:"Phase 4 — The Multiverse",short:"Phase 4",color:"#9b59d4",titles:["WandaVision (2021)","Falcon and the Winter Soldier (2021)","Loki season 1 (2021)","Black Widow (2021)","What If...? S01 (2021)","Shang-Chi and the Legend of the Ten Rings (2021)","Eternals (2021)","Hawkeye (2021)","Spider-Man: No Way Home (2021)","Moon Knight (2022)","Doctor Strange in the Multiverse of Madness (2022)","Ms. Marvel (2022)","Thor: Love and Thunder (2022)","I Am Groot (2022)","She-Hulk (2022)","Werewolf By Night (2022)","Black Panther: Wakanda Forever (2022)","Guardians of the Galaxy Christmas Special (2022)"]},
-  {id:"p5",label:"Phase 5 — New Heroes",short:"Phase 5",color:"#29c97e",titles:["Ant-Man and the Wasp: Quantumania (2023)","Guardians of the Galaxy 3 (2023)","Secret Invasion (2023)","I Am Groot S02 (2023)","Loki season 2 (2023)","The Marvels (2023)","What If...? season 2 (2023)","Echo (2024)","Deadpool & Wolverine (2024)","Agatha All Along (2024)","What If...? season 3 (2024)","Captain America: Brave New World (2025)","Daredevil: Born Again S01 (2025)","Thunderbolts* (2025)","Ironheart S01 (2025)"]},
-  {id:"p6",label:"Phase 6 — The Multiverse War",short:"Phase 6",color:"#f0c040",titles:["The Fantastic Four: First Steps (2025)","Eyes of Wakanda S01 (2025)","Marvel Zombies S01 (2025)","Wonder Man S01 (2026)","Daredevil: Born Again S02 (2026)","The Punisher: One Last Kill (2026)","Spider-Man: Brand New Day (2026)"]}
-];
+  /* ---------- CSV reading ---------- */
+  function parseCSV(text) {
+    var rows = [], row = [], field = '', inQ = false, i, c;
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    for (i = 0; i < text.length; i++) {
+      c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+        else field += c;
+      } else if (c === '"') inQ = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+  function toObjects(rows) {
+    if (!rows.length) return [];
+    var head = rows[0].map(function (h) { return String(h).trim().toLowerCase(); });
+    return rows.slice(1).map(function (r) {
+      var o = {};
+      head.forEach(function (h, i) { if (h) o[h] = (r[i] == null ? '' : String(r[i])).trim(); });
+      return o;
+    });
+  }
 
-window.XMEN_TITLES = ["X-Men (2000)","X2: X-Men United (2003)","X-Men: The Last Stand (2006)","X-Men Origins: Wolverine (2009)","X-Men: First Class (2011)","The Wolverine (2013)","X-Men: Days of Future Past (2014)","X-Men: Apocalypse (2016)","Logan (2017)","Dark Phoenix (2019)","The New Mutants (2020)"];
-window.DEADPOOL_TITLES = ["Deadpool (2016)","Deadpool 2 (2018)","Deadpool & Wolverine (2024)"];
+  function sheetId() {
+    var m = String(SHEET_LINK).match(/\/d\/([a-zA-Z0-9_-]{20,})/);
+    if (m) return m[1];
+    var bare = String(SHEET_LINK).trim();
+    return /^[a-zA-Z0-9_-]{30,}$/.test(bare) ? bare : '';
+  }
 
-// Spider-Man across every era — Raimi trilogy, Amazing duology, MCU (Holland), Spider-Verse (Miles Morales)
-window.SPIDERMAN_TITLES = ["Spider-Man (2002)","Spider-Man 2 (2004)","Spider-Man 3 (2007)","The Amazing Spider-Man (2012)","The Amazing Spider-Man 2 (2014)","Spider-Man: Homecoming (2017)","Spider-Man: Far From Home (2019)","Spider-Man: No Way Home (2021)","Spider-Man: Brand New Day (2026)","Spider-Man: Into the Spider-Verse (2018)","Spider-Man: Across the Spider-Verse (2023)"];
+  function fetchTab(id, tab) {
+    var url = 'https://docs.google.com/spreadsheets/d/' + id + '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(tab);
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, TIMEOUT_MS);
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Google answered ' + res.status + ' for the "' + tab + '" tab.');
+        return res.text();
+      })
+      .then(function (txt) {
+        clearTimeout(timer);
+        if (/^\s*</.test(txt)) throw new Error('The sheet is private. Click Share → General access → "Anyone with the link" → Viewer.');
+        return toObjects(parseCSV(txt));
+      }, function (err) { clearTimeout(timer); throw err; });
+  }
 
-// Netflix "Defenders Saga" — released in chronological order
-window.NETFLIX_SAGA_TITLES = ["Daredevil season 1 (2015)","Jessica Jones season 1 (2015)","Daredevil season 2 (2016)","Luke Cage season 1 (2016)","Iron Fist season 1 (2017)","The Defenders (2017)","The Punisher season 1 (2017)","Jessica Jones season 2 (2018)","Luke Cage season 2 (2018)","Iron Fist season 2 (2018)","Daredevil season 3 (2018)","The Punisher season 2 (2019)","Jessica Jones season 3 (2019)"];
+  /* ---------- turn sheet rows into what the site uses ---------- */
+  function isYes(v) { return /^(yes|y|true|1|x|✓)$/i.test(String(v || '').trim()); }
+  function isNo(v) { return /^(no|n|false|0)$/i.test(String(v || '').trim()); }
+  function normType(t) {
+    var l = String(t || '').trim().toLowerCase(), i;
+    for (i = 0; i < TYPES.length; i++) if (TYPES[i].toLowerCase() === l) return TYPES[i];
+    return t ? String(t).trim() : 'Movie';
+  }
 
-window.SERIES_TITLES = Object.keys(window.META).filter(t => ["Series","Animated Series","Special Presentation"].includes(window.META[t].type));
+  function build(raw, source, error) {
+    var warn = [], META = {}, DL = {}, info = {}, order = [], lc = {}, linkCount = 0;
 
-window.ALL_TITLES = [...new Set([...window.PHASES.flatMap(p=>p.titles), ...window.XMEN_TITLES, ...window.DEADPOOL_TITLES, ...window.NETFLIX_SAGA_TITLES, ...window.SPIDERMAN_TITLES])];
+    (raw.titles || []).forEach(function (r) {
+      if (!r.title) return;
+      var key = r.year ? r.title + ' (' + r.year + ')' : r.title;
+      if (META[key]) { warn.push('Same post twice in Titles: ' + key); return; }
+      META[key] = {
+        type: normType(r.type), phase: r.tag || null, year: r.year || '', runtime: r.runtime || '', rating: r.rating || '',
+        genres: (r.genres || '').split(',').map(function (g) { return g.trim(); }).filter(Boolean),
+        plot: r.plot || '', cast: r.cast || '', director: r.director || ''
+      };
+      info[key] = {
+        idx: order.length, banner: isYes(r.banner),
+        sections: [r['section 1'], r['section 2'], r['section 3']]
+          .map(function (s) { return String(s || '').trim().toLowerCase(); }).filter(Boolean)
+      };
+      lc[key.toLowerCase()] = key;
+      order.push(key);
+    });
+
+    (raw.links || []).forEach(function (r) {
+      if (!r.post && !r.link) return;
+      var key = META[r.post] ? r.post : lc[String(r.post || '').toLowerCase()];
+      if (!r.post || !r.link) { warn.push('Links row skipped, ' + (r.post ? 'no link' : 'no post') + ': ' + (r.post || r.link)); return; }
+      if (!key) { warn.push('Links row names a post that does not exist: "' + r.post + '"'); return; }
+      (DL[key] = DL[key] || []).push({ q: r['button label'] || 'Download', audio: r.audio || '', url: tg(r.link) });
+      linkCount++;
+    });
+
+    function yearOf(k) { var y = parseInt(META[k].year, 10); return isNaN(y) ? 99999 : y; }
+    function byYear(a, b) { return yearOf(a) - yearOf(b) || info[a].idx - info[b].idx; }
+
+    var secs = (raw.sections || []).filter(function (r) { return r['section name']; }).map(function (r, i) {
+      var c = String(r.color || '').trim(), page = String(r['also on page'] || '').toLowerCase().replace(/[^a-z]/g, '');
+      return {
+        name: r['section name'], _i: i, order: parseFloat(r['home order']),
+        color: COLORS[c.toLowerCase()] || (/^#[0-9a-f]{3,8}$/i.test(c) ? c : '#8888a0'),
+        home: !isNo(r['show on home']),
+        page: page === 'phases' ? 'Phases' : (page === 'xmen' ? 'X-Men' : ''),
+        auto: /series/i.test(r['auto rule'] || '')
+      };
+    });
+    secs.sort(function (a, b) {
+      var ao = isNaN(a.order) ? 9999 : a.order, bo = isNaN(b.order) ? 9999 : b.order;
+      return ao - bo || a._i - b._i;
+    });
+
+    var known = {}, used = {};
+    secs.forEach(function (s) { known[s.name.toLowerCase()] = true; });
+    var SECTIONS = secs.map(function (s, i) {
+      var nm = s.name.toLowerCase();
+      var list = order.filter(function (k) {
+        return s.auto ? SERIES_TYPES.indexOf(META[k].type) > -1 : info[k].sections.indexOf(nm) > -1;
+      }).sort(byYear);
+      list.forEach(function (k) { used[k] = true; });
+      return { id: 'sec-' + i, label: s.name, color: s.color, home: s.home, page: s.page, titles: list };
+    });
+
+    order.forEach(function (k) {
+      info[k].sections.forEach(function (n) { if (!known[n]) warn.push('"' + k + '" uses a section that is not in the Collections tab: ' + n); });
+      if (!used[k]) warn.push('"' + k + '" is not in any section, so it only shows in Search.');
+    });
+
+    window.META = META;
+    window.DOWNLOADS = DL;
+    window.SECTIONS = SECTIONS;
+    window.ALL_TITLES = order.slice();
+    window.HERO_POOL = order.filter(function (k) { return info[k].banner; });
+    window.DATA_STATUS = { source: source, titles: order.length, links: linkCount, sections: SECTIONS.length, warnings: warn, error: error || '' };
+    return window.DATA_STATUS;
+  }
+
+  function readCache() {
+    try { var c = JSON.parse(localStorage.getItem(CACHE_KEY)); return c && c.titles && c.titles.length ? c : null; }
+    catch (e) { return null; }
+  }
+
+  /* ---------- load: Google Sheet → last saved copy → built-in backup ---------- */
+  window.DATA_READY = (async function () {
+    var id = sheetId(), err = '';
+    if (id) {
+      try {
+        var res = await Promise.all([fetchTab(id, TABS.titles), fetchTab(id, TABS.links), fetchTab(id, TABS.sections)]);
+        var raw = { titles: res[0], links: res[1], sections: res[2] };
+        if (!raw.titles.length || !('title' in raw.titles[0])) throw new Error('The "Titles" tab is empty or its header row (row 1) was changed.');
+        if (!raw.sections.length || !('section name' in raw.sections[0])) throw new Error('The "Collections" tab is empty or its header row (row 1) was changed.');
+        if (raw.links.length && !('post' in raw.links[0])) throw new Error('The "Links" tab header row (row 1) was changed.');
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(raw)); } catch (e) { /* storage full or blocked: fine */ }
+        return build(raw, 'sheet');
+      } catch (e) {
+        err = (e && e.message) || String(e);
+        console.warn('[MarvelVault] Could not read the Google Sheet:', err);
+      }
+      var cached = readCache();
+      if (cached) return build(cached, 'cache', err);
+    } else {
+      err = 'Google Sheet link is not set in data.js yet.';
+    }
+    return build(window.BACKUP_DATA || { titles: [], links: [], sections: [] }, 'backup', err);
+  })();
+})();
