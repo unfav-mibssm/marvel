@@ -4,18 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0a0f">
-  <title>Marvel Vault — Marvel Collection</title>
+  <title>Marvel Hub — MCU & X-Men Collection</title>
   <meta name="description" content="Browse and download the complete Marvel Cinematic Universe, X-Men, Spider-Man, and Netflix Defenders collection.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div id="boot-loader"><div class="boot-logo">MARVEL<span>Hub</span></div></div>
 
 <!-- ═══════════════════════════════════════════════
      TOP NAVIGATION
 ════════════════════════════════════════════════ -->
 <nav id="topnav">
   <div class="nav-logo no-select" onclick="showPage('home')">
-    MARVEL<span></span>
+    MARVEL<span>Hub</span>
   </div>
 
   <ul class="nav-links">
@@ -37,7 +39,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
-      <span>Watchlist</span>
+      <span></span>
       <span class="wl-count">0</span>
     </button>
   </div>
@@ -177,6 +179,7 @@
 </nav>
 
 <!-- Scripts -->
+<script src="backup.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
