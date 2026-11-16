@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0a0a0f">
+<title>MarvelVault — Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- Sign-in screen -->
+<div id="gate" class="gate">
+  <div class="gate-box">
+    <div class="logo">MARVEL<span>VAULT</span></div>
+    <h1>Admin</h1>
+    <p id="gate-msg">Private dashboard. Sign in with the owner Google account.</p>
+    <button id="btn-login" class="btn red">Sign in with Google</button>
+  </div>
+</div>
+
+<!-- Dashboard (hidden until the admin Gmail is verified) -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="logo">MARVEL<span>VAULT</span><em>ADMIN</em></div>
+    <div class="top-r">
+      <span id="live-pill" class="pill off"><i></i><b>CONNECTING</b></span>
+      <button id="btn-refresh" class="btn ghost" title="Update statistics now">↻</button>
+      <button id="btn-logout" class="btn ghost">Logout</button>
+    </div>
+  </header>
+  <nav id="tabs" class="tabs">
+    <button data-tab="overview" class="on">Overview</button><button data-tab="live">Live</button>
+    <button data-tab="rank">Rankings</button><button data-tab="trends">Trends</button>
+    <button data-tab="history">History</button><button data-tab="content">Content</button><button data-tab="settings">Settings</button>
+  </nav>
+  <div id="filters" class="filters">
+    <label>Period <select id="range">
+      <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="last7">Last 7 days</option>
+      <option value="last30">Last 30 days</option><option value="thisMonth">This month</option><option value="lastMonth">Last month</option>
+      <option value="all" selected>All Time</option><option value="custom">Custom range</option></select></label>
+    <span id="custom" hidden><input type="date" id="c-from"> <input type="date" id="c-to"></span>
+    <small>India time (IST)</small>
+  </div>
+  <main>
+    <section id="tab-overview" class="tab"></section><section id="tab-live" class="tab" hidden></section>
+    <section id="tab-rank" class="tab" hidden></section><section id="tab-trends" class="tab" hidden></section>
+    <section id="tab-history" class="tab" hidden></section><section id="tab-content" class="tab" hidden></section>
+    <section id="tab-settings" class="tab" hidden></section>
+  </main>
+</div>
+
+<script src="backup.js"></script>
+<script src="data.js"></script>
+<script src="firebase-config.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
