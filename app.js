@@ -484,7 +484,7 @@ function openModal(titleKey) {
   if (downloads.length === 0) {
     dlHTML = `<p style="font-size:13px;color:var(--text-dim)">No download links available.</p>`;
   } else if (downloads.length === 1 && downloads[0].q === 'Download') {
-    dlHTML = `<a class="tg-dl-btn-large" href="${esc(downloads[0].url)}" target="_blank" rel="noopener noreferrer">${telegramSVG(18)} Download on Telegram</a>`;
+    dlHTML = `<a class="tg-dl-btn-large" href="${esc(downloads[0].url)}" target="_blank" rel="noopener noreferrer" data-mv-title="${esc(title)}" data-mv-label="${esc(downloads[0].q)}" data-mv-audio="${esc(downloads[0].audio || '')}">${telegramSVG(18)} Download on Telegram</a>`;
   } else {
     dlHTML = `<div class="downloads-grid">${downloads.map(d => `
         <div class="download-item">
@@ -492,7 +492,7 @@ function openModal(titleKey) {
             <div class="download-quality">${esc(d.q)}</div>
             ${d.audio ? `<div class="download-audio"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> ${esc(d.audio)}</div>` : ''}
           </div>
-          <a class="tg-dl-btn" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${telegramSVG(13)} Get</a>
+          <a class="tg-dl-btn" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer" data-mv-title="${esc(title)}" data-mv-label="${esc(d.q)}" data-mv-audio="${esc(d.audio || '')}">${telegramSVG(13)} Get</a>
         </div>`).join('')}</div>`;
   }
 
