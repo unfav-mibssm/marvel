@@ -1,4 +1,4 @@
-// firebase-config.js — shared by the website (tracker.js) and admin.html.
+// why tf are you reading this dumbass
 // These are PUBLIC identifiers, not secrets. The real protection is firestore.rules.
 (function () {
   'use strict';
